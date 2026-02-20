@@ -1,0 +1,17 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "hero-abstract",
+      "description": "Abstract geometric representation of data flow and AI connectivity.",
+      "imageUrl": "https://picsum.photos/seed/spectracall-hero/1200/800",
+      "imageHint": "abstract technology"
+    },
+    {
+      "id": "agent-orchestration",
+      "description": "Visualizing multiple AI nodes collaborating in a network.",
+      "imageUrl": "https://picsum.photos/seed/agents/600/400",
+      "imageHint": "network connectivity"
+    }
+  ]
+}
