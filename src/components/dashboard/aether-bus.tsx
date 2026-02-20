@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Cpu, Zap, Activity, ShieldCheck, Box, Layers } from "lucide-react";
+import { Cpu, Zap, Activity, ShieldCheck, Box, Layers, MousePointer2, CpuIcon, Database } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,7 @@ const TIERS = [
   {
     id: "cognitive",
     name: "The Cognitive Plane",
-    desc: "Python asyncio + uvloop Orchestration",
+    desc: "Python + uvloop + Local Caching",
     latencyTarget: "< 1ms",
     currentLatency: "0.82ms",
     color: "hsl(var(--primary))",
@@ -34,13 +34,15 @@ const TIERS = [
 ];
 
 export function AetherBusStatus() {
-  const [throughput, setThroughput] = useState(15.2); // Million msg/s
+  const [throughput, setThroughput] = useState(15.2); // Million msg/s (Tachyon)
+  const [pythonThroughput, setPythonThroughput] = useState(582.4); // K msg/s (HFT Optimized)
   const [load, setLoad] = useState(64);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setThroughput(prev => Math.min(18, Math.max(14, prev + (Math.random() - 0.5) * 0.5)));
-      setLoad(prev => Math.min(100, Math.max(40, prev + (Math.random() - 0.5) * 10)));
+      setPythonThroughput(prev => Math.min(650, Math.max(550, prev + (Math.random() - 0.5) * 10)));
+      setLoad(prev => Math.min(100, Math.max(40, prev + (Math.random() - 0.5) * 5)));
     }, 2000);
     return () => clearInterval(interval);
   }, []);
@@ -52,40 +54,58 @@ export function AetherBusStatus() {
           <div className="space-y-1">
             <CardTitle className="text-xl font-headline flex items-center gap-2">
               <Cpu className="w-5 h-5 text-accent" />
-              AetherBus Extreme
+              AetherBus v4.0 (Speed of Light)
             </CardTitle>
-            <CardDescription className="text-xs">Three-Tier Performance Architecture v4.3.1</CardDescription>
+            <CardDescription className="text-xs">HFT-Optimized ASI Core v4.3.1</CardDescription>
           </div>
-          <Badge variant="outline" className="font-mono text-[10px] border-accent/30 text-accent">
-            RDMA ENABLED
+          <Badge variant="outline" className="font-mono text-[10px] border-accent/30 text-accent animate-pulse">
+            SLOT-BASED MEMORY
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Core Metrics */}
+        {/* Core Metrics Grid */}
         <div className="grid grid-cols-2 gap-4">
           <div className="p-3 rounded-lg bg-white/5 border border-white/10 space-y-1">
-            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Throughput</p>
+            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Tachyon Throughput</p>
             <div className="flex items-baseline gap-1">
               <span className="text-2xl font-mono text-accent">{throughput.toFixed(1)}M</span>
               <span className="text-[10px] text-muted-foreground">msg/s</span>
             </div>
-            <Progress value={(throughput / 81.9) * 100} className="h-1 bg-white/5" />
+            <Progress value={(throughput / 20) * 100} className="h-1 bg-white/5" />
           </div>
           <div className="p-3 rounded-lg bg-white/5 border border-white/10 space-y-1">
-            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Bus Stability</p>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span className="text-lg font-mono">99.999%</span>
+            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Python Dispatch</p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-mono text-primary">{pythonThroughput.toFixed(1)}K</span>
+              <span className="text-[10px] text-muted-foreground">msg/s</span>
             </div>
-            <div className="text-[10px] text-emerald-400/70 font-mono">Contract Checker: OK</div>
+            <div className="flex gap-2 mt-1">
+               <Badge className="bg-emerald-500/10 text-emerald-400 text-[8px] border-none h-4 px-1">HFT+ 150X</Badge>
+            </div>
           </div>
+        </div>
+
+        {/* HFT Optimization Specs */}
+        <div className="grid grid-cols-3 gap-2">
+           <div className="flex flex-col items-center p-2 rounded bg-black/20 border border-white/5 text-center">
+              <MousePointer2 className="w-3 h-3 text-accent mb-1" />
+              <span className="text-[8px] font-bold uppercase text-muted-foreground">No Dot Lookup</span>
+           </div>
+           <div className="flex flex-col items-center p-2 rounded bg-black/20 border border-white/5 text-center">
+              <Database className="w-3 h-3 text-accent mb-1" />
+              <span className="text-[8px] font-bold uppercase text-muted-foreground">__slots__ Only</span>
+           </div>
+           <div className="flex flex-col items-center p-2 rounded bg-black/20 border border-white/5 text-center">
+              <CpuIcon className="w-3 h-3 text-accent mb-1" />
+              <span className="text-[8px] font-bold uppercase text-muted-foreground">Atomic ID Gen</span>
+           </div>
         </div>
 
         {/* Tier Visualization */}
         <div className="space-y-3">
            <div className="flex items-center gap-2 text-[10px] font-bold uppercase text-muted-foreground tracking-wider">
-             <Layers className="w-3 h-3" /> System Hierarchy
+             <Layers className="w-3 h-3" /> Architecture Layers
            </div>
            <div className="space-y-2 relative">
              <div className="absolute left-[15px] top-4 bottom-4 w-px bg-white/10" />
@@ -110,11 +130,12 @@ export function AetherBusStatus() {
         </div>
 
         {/* Low-level details */}
-        <div className="flex gap-4 text-[9px] font-mono opacity-60 justify-center border-t border-white/5 pt-4">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-[9px] font-mono opacity-60 justify-center border-t border-white/5 pt-4">
            <div className="flex items-center gap-1"><Zap className="w-2 h-2" /> RoCE v2</div>
-           <div className="flex items-center gap-1"><Zap className="w-2 h-2" /> Kernel Bypass</div>
            <div className="flex items-center gap-1"><Zap className="w-2 h-2" /> Zero-Copy</div>
-           <div className="flex items-center gap-1"><Zap className="w-2 h-2" /> SIMD Tachyon</div>
+           <div className="flex items-center gap-1"><Zap className="w-2 h-2" /> Local Cache</div>
+           <div className="flex items-center gap-1"><Zap className="w-2 h-2" /> uvloop</div>
+           <div className="flex items-center gap-1"><Zap className="w-2 h-2" /> fire-and-forget</div>
         </div>
       </CardContent>
     </Card>
