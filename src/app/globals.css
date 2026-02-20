@@ -61,6 +61,10 @@
   animation: flow 3s linear infinite;
 }
 
+.tier-active-glow {
+  box-shadow: 0 0 15px hsl(var(--accent) / 0.3);
+}
+
 @keyframes flow {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }

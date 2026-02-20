@@ -1,11 +1,10 @@
-
 "use client";
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BarChart3, Sparkles, Loader2, Info, CheckCircle2 } from "lucide-react";
+import { BarChart3, Sparkles, Loader2, Info, CheckCircle2, Zap } from "lucide-react";
 import { generateSmartDataInsight, type SmartDataInsightGenerationOutput } from "@/ai/flows/smart-data-insight-generation-flow";
 import { Badge } from "@/components/ui/badge";
 
@@ -28,13 +27,18 @@ export function TachyonAnalytics() {
   };
 
   return (
-    <Card className="glass-card">
+    <Card className="glass-card relative overflow-hidden">
+      <div className="absolute top-0 right-0 p-2">
+        <Badge variant="outline" className="text-[9px] border-accent/20 text-accent/70 flex gap-1 items-center">
+          <Zap className="w-2 h-2" /> Tachyon SIMD Optimized
+        </Badge>
+      </div>
       <CardHeader>
         <CardTitle className="text-xl font-headline flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-accent" />
           Tachyon Core Analytics
         </CardTitle>
-        <CardDescription>Advanced reasoning on real-time organizational data</CardDescription>
+        <CardDescription>Advanced reasoning via Three-Tier memory bridge</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex gap-2">
