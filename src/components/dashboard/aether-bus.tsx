@@ -34,14 +34,14 @@ const TIERS = [
 ];
 
 export function AetherBusStatus() {
-  const [throughput, setThroughput] = useState(15.2); // Million msg/s (Tachyon)
-  const [pythonThroughput, setPythonThroughput] = useState(582.4); // K msg/s (HFT Optimized)
+  const [throughput, setThroughput] = useState(15.2); // Million msg/s (Tachyon SIMD)
+  const [pythonThroughput, setPythonThroughput] = useState(612.4); // K msg/s (HFT Optimized)
   const [load, setLoad] = useState(64);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setThroughput(prev => Math.min(18, Math.max(14, prev + (Math.random() - 0.5) * 0.5)));
-      setPythonThroughput(prev => Math.min(650, Math.max(550, prev + (Math.random() - 0.5) * 10)));
+      setPythonThroughput(prev => Math.min(680, Math.max(580, prev + (Math.random() - 0.5) * 10)));
       setLoad(prev => Math.min(100, Math.max(40, prev + (Math.random() - 0.5) * 5)));
     }, 2000);
     return () => clearInterval(interval);
@@ -88,15 +88,15 @@ export function AetherBusStatus() {
 
         {/* HFT Optimization Specs */}
         <div className="grid grid-cols-3 gap-2">
-           <div className="flex flex-col items-center p-2 rounded bg-black/20 border border-white/5 text-center">
+           <div className="flex flex-col items-center p-2 rounded bg-black/20 border border-white/5 text-center" title="No Dot Lookup Overhead">
               <MousePointer2 className="w-3 h-3 text-accent mb-1" />
               <span className="text-[8px] font-bold uppercase text-muted-foreground">No Dot Lookup</span>
            </div>
-           <div className="flex flex-col items-center p-2 rounded bg-black/20 border border-white/5 text-center">
+           <div className="flex flex-col items-center p-2 rounded bg-black/20 border border-white/5 text-center" title="Fixed-size Structs">
               <Database className="w-3 h-3 text-accent mb-1" />
               <span className="text-[8px] font-bold uppercase text-muted-foreground">__slots__ Only</span>
            </div>
-           <div className="flex flex-col items-center p-2 rounded bg-black/20 border border-white/5 text-center">
+           <div className="flex flex-col items-center p-2 rounded bg-black/20 border border-white/5 text-center" title="Itertools.count() optimization">
               <CpuIcon className="w-3 h-3 text-accent mb-1" />
               <span className="text-[8px] font-bold uppercase text-muted-foreground">Atomic ID Gen</span>
            </div>
@@ -132,10 +132,10 @@ export function AetherBusStatus() {
         {/* Low-level details */}
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-[9px] font-mono opacity-60 justify-center border-t border-white/5 pt-4">
            <div className="flex items-center gap-1"><Zap className="w-2 h-2" /> RoCE v2</div>
-           <div className="flex items-center gap-1"><Zap className="w-2 h-2" /> Zero-Copy</div>
-           <div className="flex items-center gap-1"><Zap className="w-2 h-2" /> Local Cache</div>
+           <div className="flex items-center gap-1"><Zap className="w-2 h-2" /> Zero-Copy Networking</div>
+           <div className="flex items-center gap-1"><Zap className="w-2 h-2" /> Kernel Bypass</div>
            <div className="flex items-center gap-1"><Zap className="w-2 h-2" /> uvloop</div>
-           <div className="flex items-center gap-1"><Zap className="w-2 h-2" /> fire-and-forget</div>
+           <div className="flex items-center gap-1"><Zap className="w-2 h-2" /> Fire-and-Forget</div>
         </div>
       </CardContent>
     </Card>
