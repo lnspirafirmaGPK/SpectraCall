@@ -1,6 +1,8 @@
 'use server';
 /**
  * @fileOverview This file defines a Genkit flow for proposing AI agent orchestration plans.
+ * 
+ * Note: This implementation follows Genkit v1.x syntax for prompt and flow definition.
  *
  * - automatedAgentOrchestrationProposal - A function that generates an AI agent orchestration plan based on a high-level goal.
  * - AutomatedAgentOrchestrationProposalInput - The input type for the automatedAgentOrchestrationProposal function.

@@ -92,7 +92,7 @@ const getTachyonAnalyticsData = ai.defineTool(
         'Customer churn rate increased by 2% last month, primarily in the SMB segment due to competitive pricing from \'Competitor Z\'. Retention strategies need immediate review.';
     } else if (lowerCaseQuery.includes('market share')) {
       simulatedData = 
-        'Market share remained stable at 12% in the last quarter, with minor gains in new markets but slight losses in mature markets. Competitor \'BetaCorp\' launched an aggressive campaign.';
+        'Market share remained stable at 12% in the last quarter, with minor gains in new markets but slight losses in mature markets. Competitor \'Beta Corp\' launched an aggressive campaign.';
     } else if (lowerCaseQuery.includes('operational efficiency')) {
       simulatedData = 
         'Operational costs increased by 7% due to supply chain disruptions. Inventory turnover rate decreased, indicating potential overstocking in certain SKUs.';

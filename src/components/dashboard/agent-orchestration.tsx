@@ -1,11 +1,10 @@
-
 "use client";
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Network, Search, Loader2, Bot, Clock, ChevronRight } from "lucide-react";
+import { Network, Search, Loader2, Bot, Clock } from "lucide-react";
 import { automatedAgentOrchestrationProposal, type AutomatedAgentOrchestrationProposalOutput } from "@/ai/flows/automated-agent-orchestration-proposal-flow";
 import { Badge } from "@/components/ui/badge";
 
@@ -17,6 +16,7 @@ export function AgentOrchestration() {
   const handlePropose = async () => {
     if (!goal.trim()) return;
     setLoading(true);
+    setProposal(null); // Reset proposal to avoid UI confusion during loading
     try {
       const output = await automatedAgentOrchestrationProposal({ highLevelGoal: goal });
       setProposal(output);
@@ -43,6 +43,7 @@ export function AgentOrchestration() {
             className="bg-white/5 border-white/10" 
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handlePropose()}
           />
           <Button 
             className="bg-primary hover:bg-primary/80"

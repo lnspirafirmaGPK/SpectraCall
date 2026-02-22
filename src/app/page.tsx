@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { AetherBusStatus } from "@/components/dashboard/aether-bus";
 import { ResonanceDriftMonitoring } from "@/components/dashboard/resonance-drift";
@@ -16,11 +15,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 export default function SpectraCallDashboard() {
   const [role, setRole] = useState<Role>("CEO");
   const [logs, setLogs] = useState<{id: number, time: string, msg: string, type: string}[]>([]);
+  const logCounter = useRef(0);
 
   useEffect(() => {
     const logInterval = setInterval(() => {
+      logCounter.current += 1;
       const newLog = {
-        id: Date.now(),
+        id: logCounter.current, // Use a counter instead of Date.now() to ensure unique keys
         time: new Date().toLocaleTimeString('en-US', { hour12: false, fractionalSecondDigits: 3 }),
         msg: [
           "AetherBus: Zero-Copy Pointer Passing verified",
@@ -208,7 +209,7 @@ export default function SpectraCallDashboard() {
               </Badge>
             </div>
             <div className="hidden sm:block">
-              &copy; {new Date().getFullYear()} SpectraCall Orchestration Platform | Developed for Aether Protocol
+              &copy; {new Date().getFullYear()} SpectraCall Orchestration Platform | Developed for the Aether Protocol
             </div>
           </footer>
         </main>
