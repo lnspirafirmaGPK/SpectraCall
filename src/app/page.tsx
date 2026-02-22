@@ -8,6 +8,7 @@ import { CrisisSimulation } from "@/components/dashboard/crisis-simulation";
 import { AgentOrchestration } from "@/components/dashboard/agent-orchestration";
 import { TachyonAnalytics } from "@/components/dashboard/tachyon-analytics";
 import { RoleSwitcher, type Role } from "@/components/dashboard/role-switcher";
+import { AIChat } from "@/components/dashboard/ai-chat";
 import { LayoutDashboard, Settings, HelpCircle, LogOut, Bell, Search, Hexagon, Terminal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,7 +22,7 @@ export default function SpectraCallDashboard() {
     const logInterval = setInterval(() => {
       logCounter.current += 1;
       const newLog = {
-        id: logCounter.current, // Use a counter instead of Date.now() to ensure unique keys
+        id: logCounter.current,
         time: new Date().toLocaleTimeString('en-US', { hour12: false, fractionalSecondDigits: 3 }),
         msg: [
           "AetherBus: Zero-Copy Pointer Passing verified",
@@ -78,7 +79,6 @@ export default function SpectraCallDashboard() {
             </SidebarMenu>
           </SidebarContent>
           <SidebarFooter className="p-4 border-t border-white/5 space-y-4">
-            {/* Real-time Monitor Mini-Widget */}
             <div className="p-3 bg-black/40 rounded-lg border border-white/5 space-y-2">
               <div className="flex items-center justify-between">
                  <span className="text-[9px] font-bold text-muted-foreground flex items-center gap-1 uppercase">
@@ -132,7 +132,6 @@ export default function SpectraCallDashboard() {
           </header>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* CEO View: All-around visibility */}
             {role === "CEO" && (
               <>
                 <div className="lg:col-span-8 space-y-6">
@@ -149,7 +148,6 @@ export default function SpectraCallDashboard() {
               </>
             )}
 
-            {/* CTO View: Technical performance and orchestration */}
             {role === "CTO" && (
               <>
                 <div className="lg:col-span-12">
@@ -164,7 +162,6 @@ export default function SpectraCallDashboard() {
               </>
             )}
 
-            {/* Crisis Manager View: Stability and simulation */}
             {role === "Crisis Manager" && (
               <>
                 <div className="lg:col-span-6">
@@ -177,7 +174,6 @@ export default function SpectraCallDashboard() {
               </>
             )}
 
-            {/* Data Analyst View: Insights and resonance */}
             {role === "Data Analyst" && (
               <>
                 <div className="lg:col-span-12">
@@ -193,7 +189,6 @@ export default function SpectraCallDashboard() {
             )}
           </div>
 
-          {/* Footer Status Bar */}
           <footer className="mt-12 pt-8 border-t border-white/5 flex items-center justify-between text-xs text-muted-foreground font-mono">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
@@ -209,10 +204,13 @@ export default function SpectraCallDashboard() {
               </Badge>
             </div>
             <div className="hidden sm:block">
-              &copy; {new Date().getFullYear()} SpectraCall Orchestration Platform | Developed for the Aether Protocol
+              &copy; {new Date().getFullYear()} SpectraCall Orchestration Platform
             </div>
           </footer>
         </main>
+        
+        {/* Floating AI Chat Assistant */}
+        <AIChat currentRole={role} />
       </div>
     </SidebarProvider>
   );
