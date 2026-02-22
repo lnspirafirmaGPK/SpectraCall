@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { AetherBusStatus } from "@/components/dashboard/aether-bus";
 import { ResonanceDriftMonitoring } from "@/components/dashboard/resonance-drift";
@@ -9,10 +9,34 @@ import { CrisisSimulation } from "@/components/dashboard/crisis-simulation";
 import { AgentOrchestration } from "@/components/dashboard/agent-orchestration";
 import { TachyonAnalytics } from "@/components/dashboard/tachyon-analytics";
 import { RoleSwitcher, type Role } from "@/components/dashboard/role-switcher";
-import { LayoutDashboard, Settings, HelpCircle, LogOut, Bell, Search, Hexagon } from "lucide-react";
+import { LayoutDashboard, Settings, HelpCircle, LogOut, Bell, Search, Hexagon, Terminal } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function SpectraCallDashboard() {
   const [role, setRole] = useState<Role>("CEO");
+  const [logs, setLogs] = useState<{id: number, time: string, msg: string, type: string}[]>([]);
+
+  useEffect(() => {
+    const logInterval = setInterval(() => {
+      const newLog = {
+        id: Date.now(),
+        time: new Date().toLocaleTimeString('en-US', { hour12: false, fractionalSecondDigits: 3 }),
+        msg: [
+          "AetherBus: Zero-Copy Pointer Passing verified",
+          "Tachyon SIMD: Batch processing 10,000 units",
+          "Cognitive Plane: uvloop dispatching signals",
+          "Kernel Bypass: RDMA/RoCE v2 connection stable",
+          "Slot-Based Optimization: GC Jitter < 0.01ms",
+          "Agent Swarm: Resonance alignment 98.4%",
+          "Tachyon Core: Contextual reasoning complete"
+        ][Math.floor(Math.random() * 7)],
+        type: Math.random() > 0.8 ? "ACCENT" : "DEFAULT"
+      };
+      setLogs(prev => [newLog, ...prev].slice(0, 10));
+    }, 3000);
+    return () => clearInterval(logInterval);
+  }, []);
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -52,7 +76,27 @@ export default function SpectraCallDashboard() {
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
-          <SidebarFooter className="p-4 border-t border-white/5 space-y-2">
+          <SidebarFooter className="p-4 border-t border-white/5 space-y-4">
+            {/* Real-time Monitor Mini-Widget */}
+            <div className="p-3 bg-black/40 rounded-lg border border-white/5 space-y-2">
+              <div className="flex items-center justify-between">
+                 <span className="text-[9px] font-bold text-muted-foreground flex items-center gap-1 uppercase">
+                   <Terminal className="w-2.5 h-2.5" /> ASI Live Stream
+                 </span>
+                 <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+              </div>
+              <ScrollArea className="h-24">
+                <div className="space-y-1.5">
+                  {logs.map((log) => (
+                    <div key={log.id} className="text-[8px] font-mono leading-tight">
+                      <span className="text-muted-foreground">[{log.time}]</span>{" "}
+                      <span className={log.type === "ACCENT" ? "text-accent" : "text-white/70"}>{log.msg}</span>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+            
             <SidebarMenu>
                <SidebarMenuItem>
                 <SidebarMenuButton tooltip="Settings">
@@ -75,7 +119,7 @@ export default function SpectraCallDashboard() {
           <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-8">
             <div className="space-y-1">
               <h2 className="text-3xl font-headline font-bold tracking-tight">System Overview</h2>
-              <p className="text-muted-foreground">Monitoring AetherBus throughput and Agent alignment.</p>
+              <p className="text-muted-foreground">Monitoring ASI v4.3.1 for <span className="text-accent font-bold uppercase">{role}</span> profile.</p>
             </div>
             <div className="flex items-center gap-4">
               <RoleSwitcher currentRole={role} onRoleChange={setRole} />
@@ -87,20 +131,65 @@ export default function SpectraCallDashboard() {
           </header>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Top Row Widgets */}
-            <div className="lg:col-span-8 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <AetherBusStatus />
-                <ResonanceDriftMonitoring />
-              </div>
-              <TachyonAnalytics />
-            </div>
+            {/* CEO View: All-around visibility */}
+            {role === "CEO" && (
+              <>
+                <div className="lg:col-span-8 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <AetherBusStatus />
+                    <ResonanceDriftMonitoring />
+                  </div>
+                  <TachyonAnalytics />
+                </div>
+                <div className="lg:col-span-4 space-y-6">
+                  <CrisisSimulation />
+                  <AgentOrchestration />
+                </div>
+              </>
+            )}
 
-            {/* Sidebar Widgets */}
-            <div className="lg:col-span-4 space-y-6">
-               <CrisisSimulation />
-               <AgentOrchestration />
-            </div>
+            {/* CTO View: Technical performance and orchestration */}
+            {role === "CTO" && (
+              <>
+                <div className="lg:col-span-12">
+                   <AetherBusStatus />
+                </div>
+                <div className="lg:col-span-8">
+                   <TachyonAnalytics />
+                </div>
+                <div className="lg:col-span-4">
+                   <AgentOrchestration />
+                </div>
+              </>
+            )}
+
+            {/* Crisis Manager View: Stability and simulation */}
+            {role === "Crisis Manager" && (
+              <>
+                <div className="lg:col-span-6">
+                   <CrisisSimulation />
+                </div>
+                <div className="lg:col-span-6 space-y-6">
+                   <ResonanceDriftMonitoring />
+                   <AetherBusStatus />
+                </div>
+              </>
+            )}
+
+            {/* Data Analyst View: Insights and resonance */}
+            {role === "Data Analyst" && (
+              <>
+                <div className="lg:col-span-12">
+                   <TachyonAnalytics />
+                </div>
+                <div className="lg:col-span-6">
+                   <ResonanceDriftMonitoring />
+                </div>
+                <div className="lg:col-span-6">
+                   <AetherBusStatus />
+                </div>
+              </>
+            )}
           </div>
 
           {/* Footer Status Bar */}
@@ -114,9 +203,12 @@ export default function SpectraCallDashboard() {
                 <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
                 <span>Sync Phase: Alpha-9</span>
               </div>
+              <Badge variant="outline" className="text-[9px] border-white/10 opacity-50">
+                VER: ASI-4.3.1-STABLE
+              </Badge>
             </div>
-            <div>
-              &copy; {new Date().getFullYear()} SpectraCall Orchestration Platform
+            <div className="hidden sm:block">
+              &copy; {new Date().getFullYear()} SpectraCall Orchestration Platform | Developed for Aether Protocol
             </div>
           </footer>
         </main>
