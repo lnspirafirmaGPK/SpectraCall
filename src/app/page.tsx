@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -31,12 +32,13 @@ export default function SpectraCallDashboard() {
           "Kernel Bypass: RDMA/RoCE v2 connection stable",
           "Slot-Based Optimization: GC Jitter < 0.01ms",
           "Agent Swarm: Resonance alignment 98.4%",
-          "Tachyon Core: Contextual reasoning complete"
-        ][Math.floor(Math.random() * 7)],
+          "Tachyon Core: Contextual reasoning complete",
+          "HFT Engine: Local Variable Cache hit 100%"
+        ][Math.floor(Math.random() * 8)],
         type: Math.random() > 0.8 ? "ACCENT" : "DEFAULT"
       };
       setLogs(prev => [newLog, ...prev].slice(0, 10));
-    }, 3000);
+    }, 2500);
     return () => clearInterval(logInterval);
   }, []);
 

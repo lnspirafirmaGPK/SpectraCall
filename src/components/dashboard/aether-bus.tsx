@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -120,7 +121,7 @@ export function AetherBusStatus() {
                       <p className="text-[10px] text-muted-foreground">{tier.desc}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] font-mono text-accent">{tier.currentLatency}</p>
+                      <p className="text-sm font-mono text-accent">{tier.currentLatency}</p>
                       <p className="text-[9px] text-muted-foreground uppercase">{tier.latencyTarget}</p>
                     </div>
                  </div>
