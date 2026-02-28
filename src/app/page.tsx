@@ -10,6 +10,7 @@ import { AgentOrchestration } from "@/components/dashboard/agent-orchestration";
 import { TachyonAnalytics } from "@/components/dashboard/tachyon-analytics";
 import { RoleSwitcher, type Role } from "@/components/dashboard/role-switcher";
 import { AIChat } from "@/components/dashboard/ai-chat";
+import { LanguageThemeSwitcher } from "@/components/dashboard/language-theme-switcher";
 import { LayoutDashboard, Settings, HelpCircle, LogOut, Bell, Search, Hexagon, Terminal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -40,7 +41,7 @@ export default function SpectraCallDashboard() {
       setLogs(prev => [newLog, ...prev].slice(0, 10));
     }, 2500);
     return () => clearInterval(logInterval);
-  }, []);
+  }, [logCounter]);
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -126,6 +127,7 @@ export default function SpectraCallDashboard() {
             </div>
             <div className="flex items-center gap-4">
               <RoleSwitcher currentRole={role} onRoleChange={setRole} />
+              <LanguageThemeSwitcher />
               <div className="h-10 w-10 rounded-full border border-white/10 flex items-center justify-center bg-white/5 relative">
                 <Bell className="w-4 h-4 text-muted-foreground" />
                 <span className="absolute top-2 right-2 w-2 h-2 bg-accent rounded-full animate-ping" />
