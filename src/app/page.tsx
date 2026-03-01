@@ -10,6 +10,7 @@ import { AgentOrchestration } from "@/components/dashboard/agent-orchestration";
 import { TachyonAnalytics } from "@/components/dashboard/tachyon-analytics";
 import { RoleSwitcher, type Role } from "@/components/dashboard/role-switcher";
 import { AIChat } from "@/components/dashboard/ai-chat";
+import { AICommandCenter } from "@/components/dashboard/ai-command-center";
 import { LanguageThemeSwitcher } from "@/components/dashboard/language-theme-switcher";
 import { LayoutDashboard, Settings, HelpCircle, LogOut, Bell, Search, Hexagon, Terminal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -122,8 +123,8 @@ export default function SpectraCallDashboard() {
         <main className="flex-1 overflow-auto p-4 md:p-8 space-y-8">
           <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-8">
             <div className="space-y-1">
-              <h2 className="text-3xl font-headline font-bold tracking-tight">System Overview</h2>
-              <p className="text-muted-foreground">Monitoring ASI v4.3.1 for <span className="text-accent font-bold uppercase">{role}</span> profile.</p>
+              <h2 className="text-3xl font-headline font-bold tracking-tight">AI-Driven Platform Overview</h2>
+              <p className="text-muted-foreground">แพลตฟอร์มขับเคลื่อนด้วย AI แบบครบวงจรสำหรับ <span className="text-accent font-bold uppercase">{role}</span>.</p>
             </div>
             <div className="flex items-center gap-4">
               <RoleSwitcher currentRole={role} onRoleChange={setRole} />
@@ -136,6 +137,10 @@ export default function SpectraCallDashboard() {
           </header>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-12">
+              <AICommandCenter />
+            </div>
+
             {role === "CEO" && (
               <>
                 <div className="lg:col-span-8 space-y-6">
