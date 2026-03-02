@@ -10,11 +10,32 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
-        code: ['monospace'],
+        sans: ['Space Grotesk', 'sans-serif'],
+        display: ['Space Grotesk', 'sans-serif'],
+        mono: ['Space Grotesk', 'monospace'],
       },
       colors: {
+        primary: {
+          DEFAULT: '#258cf4', // Electric Blue
+          dark: '#1a6bb8',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+        secondary: {
+          DEFAULT: '#0bda5b', // Neon Green
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
+        accent: {
+          DEFAULT: '#fa6238', // Neon Orange
+          cyan: '#00e5ff',
+          danger: '#ff4d4d',
+          success: '#00cc66',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
+        'background-dark': '#0b1219',
+        'background-card': '#101a23',
+        'border-subtle': '#1e2e3e',
+        'text-main': '#e2e8f0',
+        'text-muted': '#94a3b8',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
@@ -25,21 +46,9 @@ export default {
           DEFAULT: 'hsl(var(--popover))',
           foreground: 'hsl(var(--popover-foreground))',
         },
-        primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
-        },
-        secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
-        },
         muted: {
           DEFAULT: 'hsl(var(--muted))',
           foreground: 'hsl(var(--muted-foreground))',
-        },
-        accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
         },
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
