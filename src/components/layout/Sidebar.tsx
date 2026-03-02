@@ -11,6 +11,7 @@ const navItems = [
   { name: "Resonance", href: "/diagnostics", icon: "ssid_chart" },
   { name: "Creator Studio", href: "/creator", icon: "brush" },
   { name: "Audit Logs", href: "/operations", icon: "description" },
+  { name: "ASI Wireframe", href: "/inspectra-wireframe", icon: "deployed_code" },
   { name: "Settings", href: "/settings", icon: "settings" },
 ];
 
