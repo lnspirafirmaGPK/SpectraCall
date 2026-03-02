@@ -55,6 +55,20 @@
   @apply bg-card/60 backdrop-blur-md border border-white/5 shadow-xl;
 }
 
+.glass-panel {
+  background: rgba(16, 26, 35, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(37, 140, 244, 0.1);
+}
+
+.neon-glow {
+  box-shadow: 0 0 10px rgba(37, 140, 244, 0.2);
+}
+
+.glow-text {
+  text-shadow: 0 0 10px rgba(37, 140, 244, 0.5);
+}
+
 .data-flow-gradient {
   background: linear-gradient(90deg, transparent, hsl(var(--accent) / 0.2), transparent);
   background-size: 200% 100%;
