@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -6,6 +5,11 @@ import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 import { gemDraftExample } from "@/lib/schemas/gem-of-wisdom";
 
+/**
+ * Render the Operations page layout with header, left Context & Macros sidebar, central chat interface, and right Generated Artifacts panel.
+ *
+ * @returns A JSX element representing the complete operations interface and its child components.
+ */
 export default function OperationsPage() {
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-sans text-slate-900 dark:text-slate-100 antialiased flex-col">
@@ -213,6 +217,15 @@ function AIMessage({ sender, latency, text, children }: any) {
   );
 }
 
+/**
+ * Renders a compact patch summary card showing title, description, impact, and risk with action buttons.
+ *
+ * @param title - Patch title displayed in bold at the top of the card
+ * @param desc - Short description shown under the title
+ * @param impact - Impact summary (e.g., percentage or short label) shown in the Impact Analysis strip
+ * @param risk - Risk label rendered as a small badge in the card header
+ * @returns The Patch card as a JSX element
+ */
 function PatchCard({ title, desc, impact, risk }: any) {
   return (
     <div className="mt-2 w-full max-w-lg rounded-xl overflow-hidden bg-white dark:bg-background-card border border-slate-200 dark:border-border-subtle shadow-md">
@@ -238,6 +251,21 @@ function PatchCard({ title, desc, impact, risk }: any) {
   );
 }
 
+/**
+ * Renders a visual card summarizing a gem draft, its metadata, and deployment scope.
+ *
+ * @param title - Card title shown at the top (e.g., "Gem Draft: Alpha")
+ * @param desc - Short description displayed under the title
+ * @param tokens - Token count or identifier displayed in the Tokens field
+ * @param cost - Estimated cost shown in the Est. Cost field
+ * @param gem - Object containing gem metadata and deployment details. Expected to include:
+ *  - metadata.version: schema version string
+ *  - metadata.status: deployment status string
+ *  - crystallization_ritual.mode: mode string
+ *  - patch_payload.rollout_scope: rollout scope string
+ *
+ * @returns A JSX element representing the gem draft card with metadata, deploy scope/status, and an "Inspect Code" action button.
+ */
 function GemDraftCard({ title, desc, tokens, cost, gem }: any) {
   return (
     <div className="mt-2 w-full max-w-lg rounded-xl overflow-hidden bg-white dark:bg-background-card border border-slate-200 dark:border-border-subtle shadow-md">
