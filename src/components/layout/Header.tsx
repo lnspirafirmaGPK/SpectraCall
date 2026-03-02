@@ -13,6 +13,7 @@ export function Header() {
       case '/creator': return "Agent Creator Studio";
       case '/diagnostics': return "Diagnostics";
       case '/operations': return "Operations";
+      case '/inspectra-wireframe': return "ASI Inspectra Wireframe";
       default: return "ASI | Inspectra";
     }
   };
