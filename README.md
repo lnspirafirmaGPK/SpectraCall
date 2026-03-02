@@ -29,5 +29,11 @@ Advanced organizational management and AI agent orchestration powered by the **A
 - **AI/GenAI:** Genkit v1.x, Google Gemini 2.5 Flash.
 - **Visuals:** Recharts for resonance monitoring and custom HFT-inspired data viz.
 
+## Troubleshooting (TH)
+- **อุโมงค์ Ngrok หมดเวลา (Ngrok tunnel timeout):**
+  รีสตาร์ทอุโมงค์ Ngrok และยืนยันว่าเซิร์ฟเวอร์ภายใน (`localhost`) ทำงานอยู่ก่อนแชร์ URL สำหรับการใช้งานจริง หากเป็นระบบ production ควรใช้ผู้ให้บริการโฮสติ้งที่เสถียร พร้อม health checks อย่างสม่ำเสมอ
+- **การสตรีมสะดุดเมื่ออยู่หลังพร็อกซี/โหลดบาลานเซอร์/CDN:**
+  ตรวจสอบว่าโครงสร้างพร็อกซีรองรับ Server-Sent Events (SSE) หรือ HTTP streaming โดยปิดการบัฟเฟอร์ของพร็อกซีในเส้นทางที่สตรีมข้อมูล และเพิ่ม timeout ให้เหมาะสมกับการเชื่อมต่อแบบยาว
+
 ---
 *Developed for the Aetherium-Syndicate-Inspectra (ASI) Protocol.*
