@@ -1,10 +1,15 @@
-
 "use client";
 
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
+import { gemDraftExample } from "@/lib/schemas/gem-of-wisdom";
 
+/**
+ * Render the Operations page layout with header, left Context & Macros sidebar, central chat interface, and right Generated Artifacts panel.
+ *
+ * @returns A JSX element representing the complete operations interface and its child components.
+ */
 export default function OperationsPage() {
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-sans text-slate-900 dark:text-slate-100 antialiased flex-col">
@@ -66,7 +71,13 @@ export default function OperationsPage() {
 
             <AIMessage sender="ASI Core" latency="12ms" text="System drift detected in Sector 7 governance module. Analysis complete. <br/><br/>Two potential patch strategies have been generated based on the 'Gem of Wisdom' protocol. See Structured Message Cards below.">
               <PatchCard title="Contract Patch: Alpha-7" desc="Re-aligns weightings for neural consensus." impact="94% Efficiency" risk="LOW RISK" />
-              <GemDraftCard title="Gem Draft: Wisdom Protocol" desc="Proposed logic update for long-term stability." tokens="4,203" cost="0.04 ETH" />
+              <GemDraftCard
+                title="Gem Draft: Wisdom Protocol"
+                desc="Proposed logic update for long-term stability."
+                tokens="4,203"
+                cost="0.04 ETH"
+                gem={gemDraftExample}
+              />
             </AIMessage>
           </div>
 
@@ -206,6 +217,15 @@ function AIMessage({ sender, latency, text, children }: any) {
   );
 }
 
+/**
+ * Renders a compact patch summary card showing title, description, impact, and risk with action buttons.
+ *
+ * @param title - Patch title displayed in bold at the top of the card
+ * @param desc - Short description shown under the title
+ * @param impact - Impact summary (e.g., percentage or short label) shown in the Impact Analysis strip
+ * @param risk - Risk label rendered as a small badge in the card header
+ * @returns The Patch card as a JSX element
+ */
 function PatchCard({ title, desc, impact, risk }: any) {
   return (
     <div className="mt-2 w-full max-w-lg rounded-xl overflow-hidden bg-white dark:bg-background-card border border-slate-200 dark:border-border-subtle shadow-md">
@@ -231,7 +251,22 @@ function PatchCard({ title, desc, impact, risk }: any) {
   );
 }
 
-function GemDraftCard({ title, desc, tokens, cost }: any) {
+/**
+ * Renders a visual card summarizing a gem draft, its metadata, and deployment scope.
+ *
+ * @param title - Card title shown at the top (e.g., "Gem Draft: Alpha")
+ * @param desc - Short description displayed under the title
+ * @param tokens - Token count or identifier displayed in the Tokens field
+ * @param cost - Estimated cost shown in the Est. Cost field
+ * @param gem - Object containing gem metadata and deployment details. Expected to include:
+ *  - metadata.version: schema version string
+ *  - metadata.status: deployment status string
+ *  - crystallization_ritual.mode: mode string
+ *  - patch_payload.rollout_scope: rollout scope string
+ *
+ * @returns A JSX element representing the gem draft card with metadata, deploy scope/status, and an "Inspect Code" action button.
+ */
+function GemDraftCard({ title, desc, tokens, cost, gem }: any) {
   return (
     <div className="mt-2 w-full max-w-lg rounded-xl overflow-hidden bg-white dark:bg-background-card border border-slate-200 dark:border-border-subtle shadow-md">
       <div className="h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
@@ -243,6 +278,11 @@ function GemDraftCard({ title, desc, tokens, cost }: any) {
         <div className="grid grid-cols-2 gap-2">
           <div className="p-2 bg-slate-50 dark:bg-background-dark rounded border border-slate-200 dark:border-border-subtle"><p className="text-[10px] text-slate-500 uppercase">Tokens</p><p className="text-sm font-mono text-slate-900 dark:text-white">{tokens}</p></div>
           <div className="p-2 bg-slate-50 dark:bg-background-dark rounded border border-slate-200 dark:border-border-subtle"><p className="text-[10px] text-slate-500 uppercase">Est. Cost</p><p className="text-sm font-mono text-slate-900 dark:text-white">{cost}</p></div>
+          <div className="p-2 bg-slate-50 dark:bg-background-dark rounded border border-slate-200 dark:border-border-subtle"><p className="text-[10px] text-slate-500 uppercase">Schema</p><p className="text-sm font-mono text-slate-900 dark:text-white">{gem.metadata.version}</p></div>
+          <div className="p-2 bg-slate-50 dark:bg-background-dark rounded border border-slate-200 dark:border-border-subtle"><p className="text-[10px] text-slate-500 uppercase">Mode</p><p className="text-sm font-mono text-slate-900 dark:text-white">{gem.crystallization_ritual.mode}</p></div>
+        </div>
+        <div className="mt-3 px-3 py-2 rounded-lg bg-purple-500/5 border border-purple-500/20 text-[11px] text-slate-600 dark:text-slate-300">
+          <span className="font-semibold">Deploy Scope:</span> {gem.patch_payload.rollout_scope} · <span className="font-semibold">Status:</span> {gem.metadata.status}
         </div>
         <div className="mt-4"><button className="w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium transition-colors flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[16px]">code</span> Inspect Code</button></div>
       </div>
