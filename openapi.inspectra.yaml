@@ -1,0 +1,1053 @@
+openapi: 3.1.0
+info:
+  title: Inspectra Governance API
+  version: 1.0.0
+  description: >
+    Minimal OpenAPI 3.1 spec for Alerts / Replay / Gems / Approvals.
+    Designed for FastAPI + Go services behind OIDC (JWT). Supports client generation + mock servers for QA automation.
+
+servers:
+  - url: https://api.inspectra.example.com
+    description: Production
+  - url: https://staging-api.inspectra.example.com
+    description: Staging
+
+tags:
+  - name: Alerts
+  - name: Freeze
+  - name: Replay
+  - name: Gems
+  - name: Approvals
+
+security:
+  - oidc: []
+
+paths:
+  /v1/alerts:
+    get:
+      tags: [Alerts]
+      summary: List alerts
+      description: List alerts with filtering + cursor pagination.
+      operationId: listAlerts
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/cursor'
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/AlertStatus' }
+        - name: type
+          in: query
+          schema: { $ref: '#/components/schemas/AlertType' }
+        - name: severity
+          in: query
+          schema: { $ref: '#/components/schemas/Severity' }
+        - name: dept_id
+          in: query
+          schema: { type: string }
+        - name: agent_id
+          in: query
+          schema: { type: string }
+        - name: from
+          in: query
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: Alerts page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertListResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/alerts/{alert_id}:
+    get:
+      tags: [Alerts]
+      summary: Get alert detail
+      operationId: getAlert
+      parameters:
+        - $ref: '#/components/parameters/alert_id'
+      responses:
+        '200':
+          description: Alert detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+    patch:
+      tags: [Alerts]
+      summary: Update alert status
+      description: Update alert status (ACKNOWLEDGED/RESOLVED/SUPPRESSED).
+      operationId: updateAlert
+      x-required-roles: ["OPS_ADMIN", "COMPLIANCE_APPROVER"]
+      parameters:
+        - $ref: '#/components/parameters/alert_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertUpdateRequest'
+      responses:
+        '200':
+          description: Updated alert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/alerts/{alert_id}/views:
+    post:
+      tags: [Alerts]
+      summary: Record alert view (audit)
+      operationId: createAlertView
+      parameters:
+        - $ref: '#/components/parameters/alert_id'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertViewCreateRequest'
+      responses:
+        '201':
+          description: View recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditAck'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/freeze-actions:
+    post:
+      tags: [Freeze]
+      summary: Create Freeze Light action
+      description: >
+        Applies freeze immediately if permitted; otherwise creates approval request.
+        Use Idempotency-Key for safe retries.
+      operationId: createFreezeAction
+      x-required-roles: ["OPS_ADMIN"]
+      parameters:
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FreezeCreateRequest'
+      responses:
+        '201':
+          description: Freeze action created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FreezeAction'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/replay/decisions/{decision_id}:
+    get:
+      tags: [Replay]
+      summary: Get replay summary by decision
+      operationId: getReplayByDecision
+      parameters:
+        - $ref: '#/components/parameters/decision_id'
+      responses:
+        '200':
+          description: Replay summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReplayDecisionResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/replay/traces/{trace_id}:
+    get:
+      tags: [Replay]
+      summary: Get full trace (6 steps) by trace_id
+      operationId: getTrace
+      parameters:
+        - $ref: '#/components/parameters/trace_id'
+      responses:
+        '200':
+          description: Trace with steps (role-based redaction may apply)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trace'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/replay/views:
+    post:
+      tags: [Replay]
+      summary: Record replay view (audit)
+      operationId: createReplayView
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplayViewCreateRequest'
+      responses:
+        '201':
+          description: View recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditAck'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/replay/traces/{trace_id}/annotations:
+    post:
+      tags: [Replay]
+      summary: Add annotation to trace step (compliance)
+      operationId: createTraceAnnotation
+      x-required-roles: ["COMPLIANCE_APPROVER", "AUDITOR"]
+      parameters:
+        - $ref: '#/components/parameters/trace_id'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TraceAnnotationCreateRequest'
+      responses:
+        '201':
+          description: Annotation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraceAnnotation'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/replay/traces/{trace_id}/export:
+    get:
+      tags: [Replay]
+      summary: Export evidence bundle (PDF/JSON)
+      operationId: exportTrace
+      parameters:
+        - $ref: '#/components/parameters/trace_id'
+        - name: format
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [pdf, json]
+      responses:
+        '200':
+          description: Exported bundle
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceBundle'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/gems/drafts:
+    post:
+      tags: [Gems]
+      summary: Create Gem draft (auto-fill)
+      operationId: createGemDraft
+      x-required-roles: ["OPS_ADMIN"]
+      parameters:
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GemDraftCreateRequest'
+      responses:
+        '201':
+          description: Gem draft created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GemDraft'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/gems/drafts/{gem_draft_id}:
+    patch:
+      tags: [Gems]
+      summary: Update Gem draft
+      description: >
+        Update required fields (root_cause, patch, verification_plan, rollback_plan, etc.).
+        Server validates required fields depending on scope before allowing submission.
+      operationId: updateGemDraft
+      x-required-roles: ["OPS_ADMIN"]
+      parameters:
+        - $ref: '#/components/parameters/gem_draft_id'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GemDraftUpdateRequest'
+      responses:
+        '200':
+          description: Updated draft
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GemDraft'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/gems/drafts/{gem_draft_id}/submit:
+    post:
+      tags: [Gems]
+      summary: Submit Gem draft for approval
+      operationId: submitGemDraft
+      x-required-roles: ["OPS_ADMIN"]
+      parameters:
+        - $ref: '#/components/parameters/gem_draft_id'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GemDraftSubmitRequest'
+      responses:
+        '201':
+          description: Submitted for approval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GemDraftSubmitResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/gems/inbox:
+    get:
+      tags: [Gems]
+      summary: List Gem drafts pending review (Compliance inbox)
+      operationId: listGemInbox
+      x-required-roles: ["COMPLIANCE_APPROVER", "AUDITOR"]
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/cursor'
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/GemDraftInboxStatus' }
+        - name: scope
+          in: query
+          schema: { $ref: '#/components/schemas/Scope' }
+        - name: dept_id
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Inbox page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GemInboxResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/gems/{gem_id}:
+    get:
+      tags: [Gems]
+      summary: Get finalized Gem
+      operationId: getGem
+      parameters:
+        - $ref: '#/components/parameters/gem_id'
+      responses:
+        '200':
+          description: Gem detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Gem'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/approvals:
+    get:
+      tags: [Approvals]
+      summary: List approvals
+      operationId: listApprovals
+      x-required-roles: ["COMPLIANCE_APPROVER", "AUDITOR", "OPS_ADMIN"]
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/cursor'
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/ApprovalStatus' }
+        - name: subject_type
+          in: query
+          schema:
+            type: string
+            enum: [GEM_DRAFT]
+        - name: assignee
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Approvals page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalListResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/approvals/{approval_id}:
+    get:
+      tags: [Approvals]
+      summary: Get approval detail
+      operationId: getApproval
+      x-required-roles: ["COMPLIANCE_APPROVER", "AUDITOR", "OPS_ADMIN"]
+      parameters:
+        - $ref: '#/components/parameters/approval_id'
+      responses:
+        '200':
+          description: Approval detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Approval'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/approvals/{approval_id}/decisions:
+    post:
+      tags: [Approvals]
+      summary: Decide approval (approve/conditional/reject)
+      description: >
+        Enforces policy: linked replay must be opened and trace coverage threshold satisfied for high severity subjects.
+      operationId: createApprovalDecision
+      x-required-roles: ["COMPLIANCE_APPROVER"]
+      parameters:
+        - $ref: '#/components/parameters/approval_id'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalDecisionCreateRequest'
+      responses:
+        '201':
+          description: Decision recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalDecisionCreateResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+components:
+  securitySchemes:
+    oidc:
+      type: openIdConnect
+      openIdConnectUrl: https://auth.inspectra.example.com/.well-known/openid-configuration
+      description: >
+        OIDC JWT access token. RBAC enforced by backend using roles/claims (e.g., roles: ["OPS_ADMIN","COMPLIANCE_APPROVER"]).
+
+  parameters:
+    limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+    cursor:
+      name: cursor
+      in: query
+      schema: { type: string }
+    idempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string }
+      description: Use for POST operations to make retries safe.
+    alert_id:
+      name: alert_id
+      in: path
+      required: true
+      schema: { type: string }
+    decision_id:
+      name: decision_id
+      in: path
+      required: true
+      schema: { type: string }
+    trace_id:
+      name: trace_id
+      in: path
+      required: true
+      schema: { type: string }
+    gem_draft_id:
+      name: gem_draft_id
+      in: path
+      required: true
+      schema: { type: string }
+    gem_id:
+      name: gem_id
+      in: path
+      required: true
+      schema: { type: string }
+    approval_id:
+      name: approval_id
+      in: path
+      required: true
+      schema: { type: string }
+
+  responses:
+    ErrorResponse:
+      description: Error (Problem Details)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+
+  schemas:
+    # ---------- Common ----------
+    ProblemDetails:
+      type: object
+      required: [type, title, status, detail, request_id]
+      properties:
+        type: { type: string, description: URI reference that identifies the problem type }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        request_id: { type: string }
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
+
+    AuditAck:
+      type: object
+      required: [ok, audit_id]
+      properties:
+        ok: { type: boolean, const: true }
+        audit_id: { type: string }
+
+    Pagination:
+      type: object
+      required: [items, next_cursor]
+      properties:
+        next_cursor: { type: [string, "null"] }
+
+    AlertType:
+      type: string
+      enum: [DRIFT, CONTRACT_VIOLATION, SLA_BREACH, COST_SPIKE, REGRESSION_DETECTED]
+
+    Severity:
+      type: string
+      enum: [YELLOW, ORANGE, RED]
+
+    AlertStatus:
+      type: string
+      enum: [RAISED, ACKNOWLEDGED, RESOLVED, SUPPRESSED]
+
+    Scope:
+      type: string
+      enum: [AGENT, DEPT, ORG]
+
+    # ---------- Alerts ----------
+    Resonance:
+      type: object
+      required: [score, delta]
+      properties:
+        score: { type: number, minimum: 0, maximum: 100 }
+        delta: { type: number, minimum: -100, maximum: 100 }
+
+    Alert:
+      type: object
+      required:
+        [alert_id, type, severity, status, dept_id, reason_short, resonance, top_decisions, created_at]
+      properties:
+        alert_id: { type: string }
+        type: { $ref: '#/components/schemas/AlertType' }
+        severity: { $ref: '#/components/schemas/Severity' }
+        status: { $ref: '#/components/schemas/AlertStatus' }
+        dept_id: { type: string }
+        agent_id: { type: [string, "null"] }
+        reason_short: { type: string, maxLength: 200 }
+        summary: { type: object, additionalProperties: true }
+        top_decisions:
+          type: array
+          minItems: 1
+          items: { type: string }
+        resonance: { $ref: '#/components/schemas/Resonance' }
+        time_window:
+          type: [object, "null"]
+          properties:
+            from: { type: string, format: date-time }
+            to: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    AlertListResponse:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/Alert' }
+
+    AlertUpdateRequest:
+      type: object
+      required: [status]
+      properties:
+        status: { $ref: '#/components/schemas/AlertStatus' }
+
+    AlertViewCreateRequest:
+      type: object
+      properties:
+        viewer_context:
+          type: object
+          properties:
+            from_page: { type: string }
+            ui_component: { type: string }
+          additionalProperties: false
+
+    # ---------- Freeze ----------
+    FreezeScope:
+      type: string
+      enum: [WORKFLOW, DEPT, ORG]
+
+    FreezeTargetType:
+      type: string
+      enum: [WORKFLOW, DEPT, ORG]
+
+    FreezeStatus:
+      type: string
+      enum: [REQUESTED, APPROVAL_PENDING, APPLIED, REJECTED, RELEASED]
+
+    FreezeTarget:
+      type: object
+      required: [type, id]
+      properties:
+        type: { $ref: '#/components/schemas/FreezeTargetType' }
+        id: { type: string }
+
+    FreezeCreateRequest:
+      type: object
+      required: [scope, target, reason]
+      properties:
+        alert_id: { type: [string, "null"] }
+        scope: { $ref: '#/components/schemas/FreezeScope' }
+        target: { $ref: '#/components/schemas/FreezeTarget' }
+        reason: { type: string, minLength: 3, maxLength: 1000 }
+        duration_seconds: { type: [integer, "null"], minimum: 60 }
+
+    FreezeAction:
+      type: object
+      required: [freeze_id, status, scope, target, reason, created_at]
+      properties:
+        freeze_id: { type: string }
+        alert_id: { type: [string, "null"] }
+        scope: { $ref: '#/components/schemas/FreezeScope' }
+        target: { $ref: '#/components/schemas/FreezeTarget' }
+        status: { $ref: '#/components/schemas/FreezeStatus' }
+        reason: { type: string }
+        duration_seconds: { type: [integer, "null"] }
+        created_at: { type: string, format: date-time }
+
+    # ---------- Replay ----------
+    TraceCoverage:
+      type: string
+      enum: [COMPLETE, INCOMPLETE]
+
+    TraceStepType:
+      type: string
+      enum: [CONTEXT, OPTIONS, SCORING, ACTION, CONTRACTS, OUTCOME]
+
+    ReplayStepPresence:
+      type: object
+      required: [step, present]
+      properties:
+        step: { $ref: '#/components/schemas/TraceStepType' }
+        present: { type: boolean }
+
+    ReplayDecisionResponse:
+      type: object
+      required: [decision_id, trace_id, coverage, steps, links]
+      properties:
+        decision_id: { type: string }
+        trace_id: { type: string }
+        coverage: { $ref: '#/components/schemas/TraceCoverage' }
+        steps:
+          type: array
+          items: { $ref: '#/components/schemas/ReplayStepPresence' }
+        links:
+          type: object
+          properties:
+            export_pdf: { type: string }
+            export_json: { type: string }
+          additionalProperties: false
+
+    Trace:
+      type: object
+      required: [trace_id, decision_id, coverage, steps]
+      properties:
+        trace_id: { type: string }
+        decision_id: { type: string }
+        dept_id: { type: [string, "null"] }
+        agent_id: { type: [string, "null"] }
+        coverage: { $ref: '#/components/schemas/TraceCoverage' }
+        steps:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/TraceStep'
+        created_at: { type: string, format: date-time }
+
+    TraceStep:
+      type: object
+      required: [step, content]
+      properties:
+        step: { $ref: '#/components/schemas/TraceStepType' }
+        content:
+          type: object
+          description: Structured step content. Role-based redaction may remove sensitive fields.
+          additionalProperties: true
+
+    ReplayViewCreateRequest:
+      type: object
+      required: [decision_id, trace_id]
+      properties:
+        decision_id: { type: string }
+        trace_id: { type: string }
+        source:
+          type: object
+          properties:
+            alert_id: { type: [string, "null"] }
+            incident_id: { type: [string, "null"] }
+          additionalProperties: false
+
+    TraceAnnotationCreateRequest:
+      type: object
+      required: [step, note]
+      properties:
+        step: { $ref: '#/components/schemas/TraceStepType' }
+        note: { type: string, minLength: 1, maxLength: 5000 }
+        tags:
+          type: array
+          items: { type: string }
+          default: []
+
+    TraceAnnotation:
+      type: object
+      required: [annotation_id, trace_id, step, note, tags, created_at]
+      properties:
+        annotation_id: { type: string }
+        trace_id: { type: string }
+        step: { $ref: '#/components/schemas/TraceStepType' }
+        note: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        created_at: { type: string, format: date-time }
+
+    EvidenceBundle:
+      type: object
+      required: [trace_id, decision_id, generated_at, steps, contract_versions]
+      properties:
+        trace_id: { type: string }
+        decision_id: { type: string }
+        generated_at: { type: string, format: date-time }
+        steps:
+          type: array
+          items: { $ref: '#/components/schemas/TraceStep' }
+        contract_versions:
+          type: array
+          items: { type: string }
+
+    # ---------- Gems ----------
+    PatchType:
+      type: string
+      enum: [CONTRACT_PATCH, SCHEMA_HEAL, TOOL_RESTRICTION, POLICY_CLARIFICATION]
+
+    GemDraftStatus:
+      type: string
+      enum: [DRAFT, PENDING_REVIEW, PENDING_DUAL_APPROVAL, REJECTED_CHANGES_REQUESTED]
+
+    GemDraftInboxStatus:
+      type: string
+      enum: [PENDING_REVIEW, PENDING_DUAL_APPROVAL]
+
+    GemStatus:
+      type: string
+      enum: [APPROVED, APPROVED_CONDITIONAL, VERIFIED, REJECTED]
+
+    GemPatch:
+      type: object
+      required: [type]
+      properties:
+        type: { $ref: '#/components/schemas/PatchType' }
+        target_contract: { type: [string, "null"] }
+        changes:
+          type: object
+          additionalProperties: true
+
+    VerificationMetric:
+      type: object
+      required: [name, target, window]
+      properties:
+        name: { type: string }
+        target: { type: string, description: e.g. "<=0.01" or ">=+10" }
+        window: { type: string, description: e.g. "24h", "7d" }
+
+    VerificationPlan:
+      type: object
+      required: [metrics]
+      properties:
+        metrics:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/VerificationMetric' }
+
+    RollbackPlan:
+      type: object
+      required: [strategy]
+      properties:
+        strategy: { type: string }
+        to_version: { type: [string, "null"] }
+        details:
+          type: object
+          additionalProperties: true
+
+    GemDraft:
+      type: object
+      required: [gem_draft_id, status, decision_id, trace_id, scope, created_at, updated_at]
+      properties:
+        gem_draft_id: { type: string }
+        status: { $ref: '#/components/schemas/GemDraftStatus' }
+        title: { type: [string, "null"] }
+        decision_id: { type: string }
+        trace_id: { type: string }
+        alert_id: { type: [string, "null"] }
+        incident_id: { type: [string, "null"] }
+        scope: { $ref: '#/components/schemas/Scope' }
+        dept_id: { type: [string, "null"] }
+        root_cause: { type: [string, "null"] }
+        patch: { $ref: '#/components/schemas/GemPatch' }
+        verification_plan: { $ref: '#/components/schemas/VerificationPlan' }
+        rollback_plan: { $ref: '#/components/schemas/RollbackPlan' }
+        evidence_refs:
+          type: object
+          additionalProperties: true
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    GemDraftCreateRequest:
+      type: object
+      required: [decision_id, trace_id, scope]
+      properties:
+        decision_id: { type: string }
+        trace_id: { type: string }
+        alert_id: { type: [string, "null"] }
+        incident_id: { type: [string, "null"] }
+        scope: { $ref: '#/components/schemas/Scope' }
+        dept_id: { type: [string, "null"] }
+
+    GemDraftUpdateRequest:
+      type: object
+      properties:
+        title: { type: string }
+        root_cause: { type: string }
+        patch: { $ref: '#/components/schemas/GemPatch' }
+        verification_plan: { $ref: '#/components/schemas/VerificationPlan' }
+        rollback_plan: { $ref: '#/components/schemas/RollbackPlan' }
+        evidence_refs:
+          type: object
+          additionalProperties: true
+
+    GemDraftSubmitRequest:
+      type: object
+      required: [approval_mode, required_roles]
+      properties:
+        approval_mode:
+          type: string
+          enum: [SINGLE, DUAL]
+        required_roles:
+          type: array
+          minItems: 1
+          items: { type: string }
+        co_approver_roles:
+          type: [array, "null"]
+          items: { type: string }
+        message: { type: [string, "null"] }
+
+    GemDraftSubmitResponse:
+      type: object
+      required: [gem_draft_id, approval_id, status]
+      properties:
+        gem_draft_id: { type: string }
+        approval_id: { type: string }
+        status: { $ref: '#/components/schemas/GemDraftStatus' }
+
+    GemInboxResponse:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/GemDraft' }
+
+    Gem:
+      type: object
+      required: [gem_id, gem_draft_id, status, scope, approved_at, links, knowledge_registration]
+      properties:
+        gem_id: { type: string }
+        gem_draft_id: { type: string }
+        status: { $ref: '#/components/schemas/GemStatus' }
+        scope: { $ref: '#/components/schemas/Scope' }
+        dept_id: { type: [string, "null"] }
+        final_patch: { $ref: '#/components/schemas/GemPatch' }
+        conditions:
+          type: array
+          items: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        links:
+          type: object
+          required: [decision_id, trace_id]
+          properties:
+            decision_id: { type: string }
+            trace_id: { type: string }
+            alert_id: { type: [string, "null"] }
+            incident_id: { type: [string, "null"] }
+            intent_ids:
+              type: array
+              items: { type: string }
+            contract_versions:
+              type: array
+              items: { type: string }
+        approved_by: { type: string }
+        approved_role: { type: string }
+        approved_at: { type: string, format: date-time }
+        indexed_at: { type: [string, "null"], format: date-time }
+        index_refs:
+          type: object
+          additionalProperties: true
+        knowledge_registration:
+          type: object
+          required: [indexed, linked, propagated]
+          properties:
+            indexed: { type: boolean }
+            linked: { type: boolean }
+            propagated: { type: boolean }
+
+    # ---------- Approvals ----------
+    ApprovalStatus:
+      type: string
+      enum: [PENDING_REVIEW, PENDING_DUAL_APPROVAL, APPROVED, APPROVED_CONDITIONAL, REJECTED]
+
+    ApprovalDecision:
+      type: string
+      enum: [APPROVE, CONDITIONAL, REJECT]
+
+    Approval:
+      type: object
+      required: [approval_id, subject_type, subject_id, status, approval_mode, required_roles, snapshot, created_at]
+      properties:
+        approval_id: { type: string }
+        subject_type:
+          type: string
+          enum: [GEM_DRAFT]
+        subject_id: { type: string }
+        status: { $ref: '#/components/schemas/ApprovalStatus' }
+        approval_mode:
+          type: string
+          enum: [SINGLE, DUAL]
+        required_roles:
+          type: array
+          items: { type: string }
+        assigned_group: { type: string }
+        snapshot:
+          type: object
+          required: [trace_id, patch_hash]
+          properties:
+            trace_id: { type: string }
+            contract_versions:
+              type: array
+              items: { type: string }
+            patch_hash: { type: string }
+        decisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApprovalDecisionRecord'
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    ApprovalDecisionRecord:
+      type: object
+      required: [approval_decision_id, decision, decider_id, decider_role, decided_at]
+      properties:
+        approval_decision_id: { type: string }
+        decision: { $ref: '#/components/schemas/ApprovalDecision' }
+        conditions:
+          type: array
+          items: { type: string }
+        reason: { type: [string, "null"] }
+        decider_id: { type: string }
+        decider_role: { type: string }
+        decided_at: { type: string, format: date-time }
+
+    ApprovalListResponse:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/Approval' }
+
+    ApprovalDecisionCreateRequest:
+      type: object
+      required: [decision]
+      properties:
+        decision: { $ref: '#/components/schemas/ApprovalDecision' }
+        conditions:
+          type: array
+          items: { type: string }
+          default: []
+        reason: { type: [string, "null"], maxLength: 2000 }
+
+    ApprovalDecisionCreateResponse:
+      type: object
+      required: [approval_id, status, next]
+      properties:
+        approval_id: { type: string }
+        status: { $ref: '#/components/schemas/ApprovalStatus' }
+        next:
+          type: object
+          required: [action]
+          properties:
+            action:
+              type: string
+              enum: [FINALIZE_GEM, UPDATE_DRAFT, NONE]
+            by: { type: [string, "null"] }
