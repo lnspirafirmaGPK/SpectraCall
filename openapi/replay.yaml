@@ -1,0 +1,35 @@
+paths:
+  /v1/replay/decisions/{decision_id}:
+    get: { tags: [Replay], operationId: getReplayByDecision, summary: Get replay summary by decision, parameters: [ { $ref: './common.yaml#/components/parameters/decision_id' } ], responses: { '200': { description: Replay summary, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/ReplayDecisionResponse' } } } } } }
+  /v1/replay/traces/{trace_id}:
+    get: { tags: [Replay], operationId: getTrace, summary: Get full trace, parameters: [ { $ref: './common.yaml#/components/parameters/trace_id' } ], responses: { '200': { description: Trace, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/Trace' } } } } } }
+  /v1/replay/views:
+    post:
+      tags: [Replay]
+      operationId: createReplayView
+      summary: Record replay view
+      requestBody: { required: true, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/ReplayViewCreateRequest' } } } }
+      responses: { '201': { description: View recorded, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/AuditAck' } } } } }
+  /v1/replay/traces/{trace_id}/annotations:
+    post:
+      tags: [Replay]
+      operationId: createTraceAnnotation
+      x-required-roles: ["COMPLIANCE_APPROVER", "AUDITOR"]
+      parameters:
+        - { $ref: './common.yaml#/components/parameters/trace_id' }
+        - { $ref: './common.yaml#/components/parameters/idempotencyKey' }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/TraceAnnotationCreateRequest' } } } }
+      responses: { '201': { description: Annotation created, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/TraceAnnotation' } } } } }
+  /v1/replay/traces/{trace_id}/export:
+    get:
+      tags: [Replay]
+      operationId: exportTrace
+      summary: Export evidence bundle
+      parameters:
+        - { $ref: './common.yaml#/components/parameters/trace_id' }
+        - name: format
+          in: query
+          required: true
+          schema: { type: string, enum: [pdf, json] }
+      responses:
+        '200': { description: Exported bundle }
