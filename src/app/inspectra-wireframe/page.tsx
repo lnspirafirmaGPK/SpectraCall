@@ -1,80 +1,111 @@
 "use client";
 
-import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { Sidebar } from "@/components/layout/Sidebar";
 
-const shellCards = [
-  "DTP Protocol Status / Resonance Avg / Throughput (msg/s)",
-  "Guardian Indicator: JIT GEPPolicyEnforcer",
-  'Emergency Controls: "Freeze Light" + Virtual Safety Cover',
-  "Left Sidebar: War Room / Agents / Policies / MCTS / Gems",
-  "Right Utility Drawer: AI Command Chat (Global Access)",
+const globalShell = [
+  "Top Bar: Org Selector, Environment Badge, Global Search, Alert Bell, Live Throughput/p95",
+  "Left Sidebar: War Room, Council, Agents, Departments, Policies, Resonance & Safety, Gems, Tachyon Core, Audit & Replay",
+  "Right Utility Drawer: AI Command Chat + Quick Actions (Declare Intent, Freeze Light, Replay, Create Agent)",
+  "Global Safety: Safe Mode toggle + role-based command guardrails",
+];
+
+const pages = [
+  {
+    title: "War Room (Executive Dashboard)",
+    objective: "ภาพรวมองค์กรแบบเรียลไทม์ + คำสั่งระดับผู้บริหาร",
+    blocks: [
+      "KPI Strip: Resonance Score, Execution Gap, SLA, Cost, Risk, Drift Alerts",
+      "Decision Spotlight: Top-impact decisions + Replay / Contract Check / Escalate",
+      "Live Event Feed: Tachyon stream + filters + pause/resume",
+      "Drift Radar Heatmap + System Health tiles (cogitator-x, governance, gem-forge, tachyon-core)",
+      "Sticky Action Bar: Declare Intent, Freeze Light, Replay Incident, Export",
+    ],
+  },
+  {
+    title: "CEO AI Council",
+    objective: "ห้องประชุมมนุษย์ + AI Director สำหรับ intent-to-plan",
+    blocks: [
+      "Intent Draft: goal, constraints, values, KPI targets, horizon, budget",
+      "Simulation Tab (Causal Policy Lab): scenario preset + compare run",
+      "Bidding/Negotiation Hub: resource asks, ROI, offer timeline, approval controls",
+      "Council Chat: threaded rationale + proposal cards",
+      "Outcomes Panel: profit/cost delta, risk map, safeguards",
+    ],
+  },
+  {
+    title: "Agents (Creator Studio + Profile)",
+    objective: "สร้าง/ควบคุม agent ด้วย least privilege และ governance-first",
+    blocks: [
+      "Agents Table: status, resonance, risk, contract version, last decision",
+      "Creator Studio 6 steps: Role → Scope → Skills → Intents → Contracts → Deploy",
+      "Realtime Validators: least privilege analyzer, tool risk meter, contract diff",
+      "Agent Profile Tabs: Overview, Trace Log, Reasoning, Governance, Gems Applied",
+      "Deploy Gates: staging evidence + compliance approval before production",
+    ],
+  },
+  {
+    title: "Audit & Replay",
+    objective: "ตรวจสอบเหตุผลย้อนหลังครบ 6 ขั้นแบบ explainable by design",
+    blocks: [
+      "Timeline: Context → Options → PRM Scoring → Selected Action → Contract Checks → Outcome",
+      "Tree Visualization: explored branches + pruned nodes",
+      "Schema Before/After Diff for heal actions",
+      "Annotate + Incident + Create Gem Draft actions",
+      "Export Evidence Bundle (PDF/JSON) สำหรับ compliance",
+    ],
+  },
+  {
+    title: "AI Command Chat (Full Page + Drawer)",
+    objective: "ศูนย์สั่งงาน AI พร้อม context attachment และ macro workflows",
+    blocks: [
+      "Context Pills: page/dept/agent/decision/incident",
+      "Macro Library: operator macros + compliance macros",
+      "Structured Output Cards: Contract Patch, Audit Summary, Gem Draft, Drift Response Plan",
+      "One-click Action: submit for approval, apply to staging, attach to incident",
+      "Safe Mode: บังคับ response ที่ conservative + ต้องมี evidence",
+    ],
+  },
 ];
 
 export default function InspectraWireframePage() {
   return (
     <div className="flex h-screen overflow-hidden bg-background-dark text-text-main font-sans">
       <Sidebar />
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
+      <div className="flex h-full flex-1 flex-col overflow-hidden">
         <Header />
 
-        <main className="flex-1 overflow-y-auto p-6 space-y-6 bg-[radial-gradient(circle_at_top,#17304a_0%,#0b1219_35%,#0b1219_100%)]">
-          <section className="glass-panel rounded-xl p-6 border border-primary/30">
-            <p className="text-xs tracking-[0.25em] uppercase text-primary mb-2">A) Global UI Shell</p>
-            <h1 className="text-2xl font-bold text-white">Aetherium Syndicate Inspectra (ASI) Wireframe</h1>
-            <p className="text-text-muted mt-2 mb-5">Cyberpunk dark-mode shell for high-fidelity handoff to Figma / Next.js + shadcn/ui.</p>
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {shellCards.map((item) => (
-                <div key={item} className="rounded-lg border border-border-subtle bg-background-card/80 p-3 text-sm">
-                  {item}
-                </div>
+        <main className="flex-1 space-y-6 overflow-y-auto bg-[radial-gradient(circle_at_top,#17304a_0%,#0b1219_35%,#0b1219_100%)] p-6">
+          <section className="glass-panel rounded-xl border border-primary/30 p-6">
+            <p className="mb-2 text-xs uppercase tracking-[0.25em] text-primary">ASI Product Wireframe Blueprint</p>
+            <h1 className="text-2xl font-bold text-white">Inspectra: War Room / Council / Agents / Replay / AI Chat</h1>
+            <p className="mt-2 text-text-muted">Wireframe หน้าหลักสำหรับ handoff ไปยัง Figma และ implementation บน Next.js + shadcn/ui</p>
+
+            <div className="mt-5 grid gap-3 md:grid-cols-2">
+              {globalShell.map((item) => (
+                <WireBox key={item} label={item} />
               ))}
             </div>
           </section>
 
-          <section className="grid gap-6 xl:grid-cols-3">
-            <Panel title="B) Command Center" subtitle="Telemetry & Resonance Drift Radar" className="xl:col-span-2">
-              <div className="grid gap-4 lg:grid-cols-5">
-                <WireBox className="lg:col-span-3 min-h-52" label="Resonance Drift Radar (Polygon Overlay + Delta Tooltip)" />
-                <WireBox className="lg:col-span-2 min-h-52" label="AkashicEnvelope Stream Visualizer (Waterfall + JSON Hover)" />
-              </div>
-              <WireBox className="mt-4 min-h-28" label="Agent Resource Bidder Board (Realtime Heatmap: Compute/Budget)" />
-            </Panel>
-
-            <Panel title="C) War Room / Council" subtitle="Split-screen Multi-Agent Orchestration">
-              <div className="grid grid-cols-3 gap-3 h-full min-h-80">
-                <WireBox className="col-span-1" label="Agent Roster\nContext Window\nAlignment Score" />
-                <WireBox className="col-span-1" label="Contemplation Thread\nCard-based Reasoning\nHuman-in-the-loop" />
-                <WireBox className="col-span-1" label="Artifact Renderer\nJSON / Policy Code\nProphetic Mode" />
-              </div>
-            </Panel>
+          <section className="grid gap-6 lg:grid-cols-2">
+            {pages.map((page) => (
+              <Panel key={page.title} title={page.title} subtitle={page.objective}>
+                <div className="space-y-3">
+                  {page.blocks.map((block) => (
+                    <WireBox key={block} label={block} />
+                  ))}
+                </div>
+              </Panel>
+            ))}
           </section>
 
-          <section className="grid gap-6 xl:grid-cols-2">
-            <Panel title="D) MCTS Reasoning Visualizer" subtitle="Glass Box Decision Tree">
-              <WireBox className="min-h-60" label="Directed Tree Graph\nSelection / Expansion / Simulation / Backpropagation" />
-              <div className="grid sm:grid-cols-2 gap-3 mt-4">
-                <WireBox label="Node Cards\nWin Rate / Visits / Token Usage" />
-                <WireBox label='Interactive Overrides\n"Prune" / Add Conditions' />
-              </div>
-            </Panel>
-
-            <Panel title="E) Audit & Replay" subtitle="Causal Investigation Time Machine">
-              <WireBox className="min-h-24" label="Time Scrubber (ms precision)" />
-              <div className="grid sm:grid-cols-2 gap-3 mt-4">
-                <WireBox className="min-h-44" label="Ground Truth Timeline" />
-                <WireBox className="min-h-44" label="Counterfactual Branching\nWhat-if comparison" />
-              </div>
-            </Panel>
-          </section>
-
-          <section>
-            <Panel title="F) Gems of Wisdom & Memory Vault" subtitle="3D Knowledge Space">
-              <div className="grid gap-4 lg:grid-cols-3">
-                <WireBox className="lg:col-span-2 min-h-48" label="Crystallization Grid\nFloating Gem Cards by weight/frequency" />
-                <WireBox className="min-h-48" label="Ritual Verification Panel\nSource JSON + Crystallization Pipeline" />
-              </div>
-            </Panel>
+          <section className="rounded-xl border border-primary/25 bg-background-card/70 p-5">
+            <h2 className="text-lg font-semibold text-white">Responsive Notes</h2>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <WireBox label="Mobile: sidebar → hamburger, KPI strip horizontal scroll, chat drawer เป็น full-screen overlay" />
+              <WireBox label="Tablet: Replay tree ยุบเหลือ top 5 options + sticky incident actions" />
+            </div>
           </section>
         </main>
       </div>
@@ -86,25 +117,23 @@ function Panel({
   title,
   subtitle,
   children,
-  className = "",
 }: {
   title: string;
   subtitle: string;
   children: React.ReactNode;
-  className?: string;
 }) {
   return (
-    <section className={`rounded-xl border border-primary/25 bg-background-card/70 p-5 ${className}`}>
-      <h2 className="text-lg text-white font-semibold">{title}</h2>
-      <p className="text-xs uppercase tracking-wide text-text-muted mb-4">{subtitle}</p>
+    <section className="rounded-xl border border-primary/25 bg-background-card/70 p-5">
+      <h2 className="text-lg font-semibold text-white">{title}</h2>
+      <p className="mb-4 text-xs uppercase tracking-wide text-text-muted">{subtitle}</p>
       {children}
     </section>
   );
 }
 
-function WireBox({ label, className = "" }: { label: string; className?: string }) {
+function WireBox({ label }: { label: string }) {
   return (
-    <div className={`rounded-lg border border-dashed border-primary/50 bg-background-dark/70 p-4 text-xs text-text-muted whitespace-pre-line ${className}`}>
+    <div className="rounded-lg border border-dashed border-primary/50 bg-background-dark/70 p-4 text-xs text-text-muted">
       <span className="text-primary">▦</span> {label}
     </div>
   );
