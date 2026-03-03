@@ -7,11 +7,7 @@ jest.mock('lucide-react', () => ({
 }));
 
 // The hook needs to be used within a SidebarProvider to work correctly.
-const wrapper = ({
-  children,
-}: {
-  children: React.ReactNode
-}) => (
+const wrapper = ({ children }: { children: React.ReactNode }) => (
   <SidebarProvider>{children}</SidebarProvider>
 );
 
