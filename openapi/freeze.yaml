@@ -1,0 +1,14 @@
+paths:
+  /v1/freeze-actions:
+    post:
+      tags: [Freeze]
+      summary: Create Freeze Light action
+      operationId: createFreezeAction
+      x-required-roles: ["OPS_ADMIN"]
+      parameters:
+        - $ref: './common.yaml#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/FreezeCreateRequest' } } }
+      responses:
+        '201': { description: Freeze action created, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/FreezeAction' } } } }

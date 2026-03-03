@@ -1,0 +1,38 @@
+paths:
+  /v1/alerts:
+    get:
+      tags: [Alerts]
+      summary: List alerts
+      operationId: listAlerts
+      parameters:
+        - $ref: './common.yaml#/components/parameters/limit'
+        - $ref: './common.yaml#/components/parameters/cursor'
+      responses:
+        '200': { description: Alerts page, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/AlertListResponse' } } } }
+  /v1/alerts/{alert_id}:
+    get:
+      tags: [Alerts]
+      summary: Get alert detail
+      operationId: getAlert
+      parameters: [ { $ref: './common.yaml#/components/parameters/alert_id' } ]
+      responses:
+        '200': { description: Alert detail, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/Alert' } } } }
+    patch:
+      tags: [Alerts]
+      summary: Update alert status
+      operationId: updateAlert
+      x-required-roles: ["OPS_ADMIN", "COMPLIANCE_APPROVER"]
+      parameters: [ { $ref: './common.yaml#/components/parameters/alert_id' } ]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/AlertUpdateRequest' } } }
+      responses:
+        '200': { description: Updated alert, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/Alert' } } } }
+  /v1/alerts/{alert_id}/views:
+    post:
+      tags: [Alerts]
+      operationId: createAlertView
+      summary: Record alert view (audit)
+      parameters: [ { $ref: './common.yaml#/components/parameters/alert_id' } ]
+      responses:
+        '201': { description: View recorded, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/AuditAck' } } } }
