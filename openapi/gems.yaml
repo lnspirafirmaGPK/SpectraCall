@@ -1,0 +1,11 @@
+paths:
+  /v1/gems/drafts:
+    post: { tags: [Gems], operationId: createGemDraft, summary: Create Gem draft, x-required-roles: ["OPS_ADMIN"], parameters: [ { $ref: './common.yaml#/components/parameters/idempotencyKey' } ], requestBody: { required: true, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/GemDraftCreateRequest' } } } }, responses: { '201': { description: Gem draft created, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/GemDraft' } } } } } }
+  /v1/gems/drafts/{gem_draft_id}:
+    patch: { tags: [Gems], operationId: updateGemDraft, x-required-roles: ["OPS_ADMIN"], parameters: [ { $ref: './common.yaml#/components/parameters/gem_draft_id' } ], requestBody: { required: true, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/GemDraftUpdateRequest' } } } }, responses: { '200': { description: Updated draft, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/GemDraft' } } } } } }
+  /v1/gems/drafts/{gem_draft_id}/submit:
+    post: { tags: [Gems], operationId: submitGemDraft, x-required-roles: ["OPS_ADMIN"], parameters: [ { $ref: './common.yaml#/components/parameters/gem_draft_id' } ], requestBody: { required: true, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/GemDraftSubmitRequest' } } } }, responses: { '201': { description: Submitted, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/GemDraftSubmitResponse' } } } } } }
+  /v1/gems/inbox:
+    get: { tags: [Gems], operationId: listGemInbox, x-required-roles: ["COMPLIANCE_APPROVER", "AUDITOR"], responses: { '200': { description: Inbox page, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/GemInboxResponse' } } } } } }
+  /v1/gems/{gem_id}:
+    get: { tags: [Gems], operationId: getGem, parameters: [ { $ref: './common.yaml#/components/parameters/gem_id' } ], responses: { '200': { description: Gem detail, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/Gem' } } } } } }

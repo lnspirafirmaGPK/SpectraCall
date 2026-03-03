@@ -1,0 +1,122 @@
+components:
+  securitySchemes:
+    oidc:
+      type: openIdConnect
+      openIdConnectUrl: https://auth.inspectra.example.com/.well-known/openid-configuration
+      description: >
+        OIDC JWT access token. RBAC enforced by backend using roles/claims (e.g., roles: ["OPS_ADMIN","COMPLIANCE_APPROVER"]).
+  parameters:
+    limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+    cursor:
+      name: cursor
+      in: query
+      schema: { type: string }
+    idempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string }
+      description: Use for POST operations to make retries safe.
+    alert_id: { name: alert_id, in: path, required: true, schema: { type: string } }
+    decision_id: { name: decision_id, in: path, required: true, schema: { type: string } }
+    trace_id: { name: trace_id, in: path, required: true, schema: { type: string } }
+    gem_draft_id: { name: gem_draft_id, in: path, required: true, schema: { type: string } }
+    gem_id: { name: gem_id, in: path, required: true, schema: { type: string } }
+    approval_id: { name: approval_id, in: path, required: true, schema: { type: string } }
+  responses:
+    ErrorResponse:
+      description: Error (Problem Details)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+  schemas:
+    ProblemDetails:
+      type: object
+      required: [type, title, status, detail, request_id]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        request_id: { type: string }
+    AuditAck:
+      type: object
+      required: [ok, audit_id]
+      properties:
+        ok: { type: boolean, const: true }
+        audit_id: { type: string }
+    AlertType: { type: string, enum: [DRIFT, CONTRACT_VIOLATION, SLA_BREACH, COST_SPIKE, REGRESSION_DETECTED] }
+    Severity: { type: string, enum: [YELLOW, ORANGE, RED] }
+    AlertStatus: { type: string, enum: [RAISED, ACKNOWLEDGED, RESOLVED, SUPPRESSED] }
+    Scope: { type: string, enum: [AGENT, DEPT, ORG] }
+    TraceCoverage: { type: string, enum: [COMPLETE, INCOMPLETE] }
+    TraceStepType: { type: string, enum: [CONTEXT, OPTIONS, SCORING, ACTION, CONTRACTS, OUTCOME] }
+    PatchType: { type: string, enum: [CONTRACT_PATCH, SCHEMA_HEAL, TOOL_RESTRICTION, POLICY_CLARIFICATION] }
+    GemDraftStatus: { type: string, enum: [DRAFT, PENDING_REVIEW, PENDING_DUAL_APPROVAL, REJECTED_CHANGES_REQUESTED] }
+    GemDraftInboxStatus: { type: string, enum: [PENDING_REVIEW, PENDING_DUAL_APPROVAL] }
+    GemStatus: { type: string, enum: [APPROVED, APPROVED_CONDITIONAL, VERIFIED, REJECTED] }
+    ApprovalStatus: { type: string, enum: [PENDING_REVIEW, PENDING_DUAL_APPROVAL, APPROVED, APPROVED_CONDITIONAL, REJECTED] }
+    ApprovalDecision: { type: string, enum: [APPROVE, CONDITIONAL, REJECT] }
+    Resonance:
+      type: object
+      required: [score, delta]
+      properties:
+        score: { type: number, minimum: 0, maximum: 100 }
+        delta: { type: number, minimum: -100, maximum: 100 }
+    Alert:
+      type: object
+      required: [alert_id, type, severity, status, dept_id, reason_short, resonance, top_decisions, created_at]
+      properties:
+        alert_id: { type: string }
+        type: { $ref: '#/components/schemas/AlertType' }
+        severity: { $ref: '#/components/schemas/Severity' }
+        status: { $ref: '#/components/schemas/AlertStatus' }
+        dept_id: { type: string }
+        agent_id: { type: [string, 'null'] }
+        reason_short: { type: string, maxLength: 200 }
+        summary: { type: object, additionalProperties: true }
+        top_decisions: { type: array, minItems: 1, items: { type: string } }
+        resonance: { $ref: '#/components/schemas/Resonance' }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    AlertListResponse:
+      type: object
+      required: [items, next_cursor]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Alert' } }
+        next_cursor: { type: [string, 'null'] }
+    AlertUpdateRequest: { type: object, required: [status], properties: { status: { $ref: '#/components/schemas/AlertStatus' } } }
+    AlertViewCreateRequest: { type: object, additionalProperties: false, properties: { viewer_context: { type: object, properties: { from_page: { type: string }, ui_component: { type: string } } } } }
+    FreezeScope: { type: string, enum: [WORKFLOW, DEPT, ORG] }
+    FreezeTargetType: { type: string, enum: [WORKFLOW, DEPT, ORG] }
+    FreezeStatus: { type: string, enum: [REQUESTED, APPROVAL_PENDING, APPLIED, REJECTED, RELEASED] }
+    FreezeTarget: { type: object, required: [type,id], properties: { type: { $ref: '#/components/schemas/FreezeTargetType' }, id: { type: string } } }
+    FreezeCreateRequest: { type: object, required: [scope,target,reason], properties: { alert_id: { type: [string,'null'] }, scope: { $ref: '#/components/schemas/FreezeScope' }, target: { $ref: '#/components/schemas/FreezeTarget' }, reason: { type: string }, duration_seconds: { type: [integer,'null'] } } }
+    FreezeAction: { type: object, required: [freeze_id,status,scope,target,reason,created_at], properties: { freeze_id: { type: string }, alert_id: { type: [string,'null'] }, scope: { $ref: '#/components/schemas/FreezeScope' }, target: { $ref: '#/components/schemas/FreezeTarget' }, status: { $ref: '#/components/schemas/FreezeStatus' }, reason: { type: string }, duration_seconds: { type: [integer,'null'] }, created_at: { type: string, format: date-time } } }
+    ReplayStepPresence: { type: object, required: [step,present], properties: { step: { $ref: '#/components/schemas/TraceStepType' }, present: { type: boolean } } }
+    ReplayDecisionResponse: { type: object, required: [decision_id,trace_id,coverage,steps,links], properties: { decision_id: { type: string }, trace_id: { type: string }, coverage: { $ref: '#/components/schemas/TraceCoverage' }, steps: { type: array, items: { $ref: '#/components/schemas/ReplayStepPresence' } }, links: { type: object, additionalProperties: false, properties: { export_pdf: { type: string }, export_json: { type: string } } } } }
+    TraceStep: { type: object, required: [step,content], properties: { step: { $ref: '#/components/schemas/TraceStepType' }, content: { type: object, additionalProperties: true } } }
+    Trace: { type: object, required: [trace_id,decision_id,coverage,steps], properties: { trace_id: { type: string }, decision_id: { type: string }, dept_id: { type: [string,'null'] }, agent_id: { type: [string,'null'] }, coverage: { $ref: '#/components/schemas/TraceCoverage' }, steps: { type: array, items: { $ref: '#/components/schemas/TraceStep' } }, created_at: { type: string, format: date-time } } }
+    ReplayViewCreateRequest: { type: object, required: [decision_id,trace_id], properties: { decision_id: { type: string }, trace_id: { type: string } } }
+    TraceAnnotationCreateRequest: { type: object, required: [step,note], properties: { step: { $ref: '#/components/schemas/TraceStepType' }, note: { type: string }, tags: { type: array, items: { type: string }, default: [] } } }
+    TraceAnnotation: { type: object, required: [annotation_id,trace_id,step,note,tags,created_at], properties: { annotation_id: { type: string }, trace_id: { type: string }, step: { $ref: '#/components/schemas/TraceStepType' }, note: { type: string }, tags: { type: array, items: { type: string } }, created_at: { type: string, format: date-time } } }
+    EvidenceBundle: { type: object, required: [trace_id,decision_id,generated_at,steps,contract_versions], properties: { trace_id: { type: string }, decision_id: { type: string }, generated_at: { type: string, format: date-time }, steps: { type: array, items: { $ref: '#/components/schemas/TraceStep' } }, contract_versions: { type: array, items: { type: string } } } }
+    GemPatch: { type: object, required: [type], properties: { type: { $ref: '#/components/schemas/PatchType' }, target_contract: { type: [string,'null'] }, changes: { type: object, additionalProperties: true } } }
+    VerificationPlan: { type: object, required: [metrics], properties: { metrics: { type: array, items: { type: object, additionalProperties: true } } } }
+    RollbackPlan: { type: object, required: [strategy], properties: { strategy: { type: string } } }
+    GemDraft: { type: object, required: [gem_draft_id,status,decision_id,trace_id,scope,created_at,updated_at], properties: { gem_draft_id: { type: string }, status: { $ref: '#/components/schemas/GemDraftStatus' }, decision_id: { type: string }, trace_id: { type: string }, scope: { $ref: '#/components/schemas/Scope' }, dept_id: { type: [string,'null'] }, patch: { $ref: '#/components/schemas/GemPatch' }, verification_plan: { $ref: '#/components/schemas/VerificationPlan' }, rollback_plan: { $ref: '#/components/schemas/RollbackPlan' }, created_at: { type: string, format: date-time }, updated_at: { type: string, format: date-time } } }
+    GemDraftCreateRequest: { type: object, required: [decision_id,trace_id,scope], properties: { decision_id: { type: string }, trace_id: { type: string }, scope: { $ref: '#/components/schemas/Scope' }, dept_id: { type: [string,'null'] } } }
+    GemDraftUpdateRequest: { type: object, properties: { title: { type: string }, patch: { $ref: '#/components/schemas/GemPatch' } } }
+    GemDraftSubmitRequest: { type: object, required: [approval_mode,required_roles], properties: { approval_mode: { type: string, enum: [SINGLE,DUAL] }, required_roles: { type: array, items: { type: string } } } }
+    GemDraftSubmitResponse: { type: object, required: [gem_draft_id,approval_id,status], properties: { gem_draft_id: { type: string }, approval_id: { type: string }, status: { $ref: '#/components/schemas/GemDraftStatus' } } }
+    GemInboxResponse: { type: object, required: [items,next_cursor], properties: { items: { type: array, items: { $ref: '#/components/schemas/GemDraft' } }, next_cursor: { type: [string,'null'] } } }
+    Gem: { type: object, required: [gem_id,gem_draft_id,status,scope,approved_at,links,knowledge_registration], properties: { gem_id: { type: string }, gem_draft_id: { type: string }, status: { $ref: '#/components/schemas/GemStatus' }, scope: { $ref: '#/components/schemas/Scope' }, links: { type: object, properties: { decision_id: { type: string }, trace_id: { type: string } } }, approved_by: { type: string }, approved_role: { type: string }, approved_at: { type: string, format: date-time }, knowledge_registration: { type: object, required: [indexed,linked,propagated], properties: { indexed: { type: boolean }, linked: { type: boolean }, propagated: { type: boolean } } } } }
+    ApprovalDecisionRecord: { type: object, required: [approval_decision_id,decision,decider_id,decider_role,decided_at], properties: { approval_decision_id: { type: string }, decision: { $ref: '#/components/schemas/ApprovalDecision' }, decider_id: { type: string }, decider_role: { type: string }, decided_at: { type: string, format: date-time } } }
+    Approval: { type: object, required: [approval_id,subject_type,subject_id,status,approval_mode,required_roles,snapshot,created_at], properties: { approval_id: { type: string }, subject_type: { type: string, enum: [GEM_DRAFT] }, subject_id: { type: string }, status: { $ref: '#/components/schemas/ApprovalStatus' }, approval_mode: { type: string, enum: [SINGLE,DUAL] }, required_roles: { type: array, items: { type: string } }, snapshot: { type: object, required: [trace_id,patch_hash], properties: { trace_id: { type: string }, patch_hash: { type: string } } }, decisions: { type: array, items: { $ref: '#/components/schemas/ApprovalDecisionRecord' } }, created_at: { type: string, format: date-time }, updated_at: { type: string, format: date-time } } }
+    ApprovalListResponse: { type: object, required: [items,next_cursor], properties: { items: { type: array, items: { $ref: '#/components/schemas/Approval' } }, next_cursor: { type: [string,'null'] } } }
+    ApprovalDecisionCreateRequest: { type: object, required: [decision], properties: { decision: { $ref: '#/components/schemas/ApprovalDecision' } } }
+    ApprovalDecisionCreateResponse: { type: object, required: [approval_id,status,next], properties: { approval_id: { type: string }, status: { $ref: '#/components/schemas/ApprovalStatus' }, next: { type: object, required: [action], properties: { action: { type: string, enum: [FINALIZE_GEM,UPDATE_DRAFT,NONE] }, by: { type: [string,'null'] } } } } }
