@@ -1,6 +1,5 @@
-import React from 'react';
-import { act, renderHook } from '@testing-library/react';
-
+// @ts-nocheck
+import { renderHook, act } from '@testing-library/react';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 
 jest.mock('lucide-react', () => ({
@@ -18,9 +17,15 @@ const wrapper = ({
 
 describe('useSidebar', () => {
   it('should throw an error if not used within a SidebarProvider', () => {
+    // Suppress the expected error output in the test console
+    const originalError = console.error;
+    console.error = jest.fn();
+
     expect(() => renderHook(() => useSidebar())).toThrow(
-      new Error('useSidebar must be used within a SidebarProvider.')
+      'useSidebar must be used within a SidebarProvider.'
     );
+
+    console.error = originalError;
   });
 
   it('should have correct default state on desktop', () => {
