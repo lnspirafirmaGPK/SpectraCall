@@ -13,10 +13,10 @@ describe('useSidebar', () => {
     // Suppress the expected error output in the test console
     const originalError = console.error;
     console.error = jest.fn();
-    
-    const { result } = renderHook(() => useSidebar());
-    
-    expect(result.error).toEqual(new Error('useSidebar must be used within a SidebarProvider.'));
+
+    expect(() => renderHook(() => useSidebar())).toThrow(
+      'useSidebar must be used within a SidebarProvider.'
+    );
 
     console.error = originalError;
   });
