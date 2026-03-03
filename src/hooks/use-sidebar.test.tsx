@@ -3,6 +3,10 @@ import { renderHook, act } from '@testing-library/react';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import React from 'react';
 
+jest.mock('lucide-react', () => ({
+  PanelLeft: () => null,
+}));
+
 // The hook needs to be used within a SidebarProvider to work correctly.
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <SidebarProvider>{children}</SidebarProvider>
@@ -13,10 +17,10 @@ describe('useSidebar', () => {
     // Suppress the expected error output in the test console
     const originalError = console.error;
     console.error = jest.fn();
-    
-    const { result } = renderHook(() => useSidebar());
-    
-    expect(result.error).toEqual(new Error('useSidebar must be used within a SidebarProvider.'));
+
+    expect(() => renderHook(() => useSidebar())).toThrow(
+      new Error('useSidebar must be used within a SidebarProvider.')
+    );
 
     console.error = originalError;
   });
