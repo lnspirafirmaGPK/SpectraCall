@@ -27,3 +27,7 @@ If `OIDC_INTROSPECTION_URL` is unset/empty, opaque tokens are rejected with 401.
 ## Caching hardening
 - JWKS honors `ETag` / `If-None-Match` and `Cache-Control: max-age` when available.
 - Introspection responses are cached in-process with LRU eviction and configurable TTL/size.
+
+## Related docs
+
+- System auth sequence (JWT + introspection fallback): `../docs/oidc-auth-sequence.md`
