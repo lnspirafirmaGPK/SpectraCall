@@ -275,3 +275,483 @@ R08 INPT |---|---|---|INP|INP|INP|INP|INP|INP|---|---|---|
 - Table row height: **44–52px**
 - Sticky action bar height: **56–64px**
 - Drawer width: **3 cols (c10–c12)** หรือ **360–420px** (ตาม breakpoint)
+
+---
+
+## 7) Deep-Dive Sub-Components (ละเอียดเพิ่มอีกระดับ)
+
+> ทุกส่วนยังยึด 12-column grid และระบุ pane/column + table columns + states/interactions สำคัญ
+
+### 7.1 War Room Deep-Dive
+
+#### 7.1.1 KPI Strip (6 cards on c03–c12)
+
+- แนววางแนะนำ: **6 cards × 2 columns/card = 12 columns**
+- Card spacing: ใช้ **gutter มาตรฐาน 24px**
+
+```text
+KPI (c03–c12) internal grid → |01|02|03|04|05|06|07|08|09|10|11|12|
+Row KPI-1                        [RSC][RSC][EGI][EGI][SLA][SLA][CST][CST][RSK][RSK][DRT][DRT]
+```
+
+Legend:
+- RSC = Resonance Score Card
+- EGI = Execution Gap Index Card
+- SLA = SLA Health Card
+- CST = Cost & Billing Card
+- RSK = Risk Score Card
+- DRT = Drift Alerts Card
+
+KPI Card template:
+
+```text
+┌──────────────────────────────┐
+│ Title (icon)        (i)      │
+│ Big Value + Unit             │
+│ Δ vs prev (↑/↓) + sparkline  │
+│ Footer: CTA link             │
+└──────────────────────────────┘
+```
+
+KPI card required details:
+- **RSC**: Big `92/100` + badge (Green/Yellow/Orange/Red), mini `Top drift dept: FIN (−8)`, CTA `Open Drift Console`.
+- **EGI**: Big `median intent→action 320ms / p95 2.1s`, mini `Most delay: Approval Gate`, CTA `Open Intent Timeline`.
+- **SLA**: Big `% On-time + breach count`, CTA `Open SLA Details`.
+- **CST**: Big `Today spend + Forecast`, CTA `Billing`.
+- **RSK**: Big `composite score + top drivers`, CTA `Risk Breakdown`.
+- **DRT**: Big `active drift alerts count`, CTA `Filter Drift: Orange+`.
+
+#### 7.1.2 Decision Spotlight (DSP c03–c08)
+
+```text
+DSP internal grid → |01|02|03|04|05|06|
+Row 1               [HDR][HDR][HDR][HDR][HDR][HDR]
+Row 2               [FLT][FLT][FLT][FLT][FLT][FLT]
+Row 3–8             [TBL][TBL][TBL][TBL][TBL][TBL]
+Row 9               [PAG][PAG][PAG][PAG][PAG][PAG]
+```
+
+- **DSP-HDR**: `Decision Spotlight` + `Export`, subtitle `High-impact decisions (Top 5/10)`
+- **DSP-FLT**: time range (inherit global), impact threshold slider, dept dropdown, status (Executed/Blocked/Healed/Escalated), search by Decision ID
+- **DSP-TBL columns**: `Time | Decision ID | Agent | Dept | Impact | Status | Actions`
+- **Row actions**: `[Replay] [Contracts] [Escalate]`
+- **States**:
+  - Empty: `No high-impact decisions in this window.`
+  - Loading: skeleton rows
+  - Permission-limited: redact Agent/Dept as `Restricted`
+
+#### 7.1.3 Live Event Feed (EVT c09–c12)
+
+```text
+EVT internal grid → |01|02|03|04|
+Row 1               [HDR][HDR][HDR][HDR]
+Row 2               [CTL][CTL][CTL][CTL]
+Row 3–9             [LST][LST][LST][LST]
+Row 10              [INL][INL][INL][INL]
+```
+
+- **EVT-HDR**: `Tachyon Event Feed`, right actions `Pause/Resume`, live dot, rate (evt/s)
+- **EVT-CTL**: filters (Dept/Agent/Event Type/Severity), search-in-feed, toggle `Show only contract denies/heals`
+- **EVT-LST row template**:
+  - `[12:01:03.221] TYPE:billing.invoice.created Dept:FIN Agent:FIN-... Sev:2`
+  - `Summary: invoice_id=... amount=... Contract: PASS`
+  - Click row → slide-over detail
+
+Slide-over detail:
+
+```text
+┌─────────────────────────────────────┐
+│ Event Detail (right slide-over)     │
+├─────────────────────────────────────┤
+│ Header: event_id, timestamp, source │
+│ Payload Summary (schema view)       │
+│ Contract Checks: pass/deny/heal     │
+│ Links: Replay decision | Open agent │
+│ Buttons: Create incident | Export   │
+└─────────────────────────────────────┘
+```
+
+#### 7.1.4 Drift Radar (DRF c03–c08)
+
+```text
+DRF internal grid → |01|02|03|04|05|06|
+Row 1               [HDR][HDR][HDR][HDR][HDR][HDR]
+Row 2–5             [HMP][HMP][HMP][HMP][RSN][RSN]
+Row 6–7             [TRN][TRN][TRN][TRN][RSN][RSN]
+Row 8               [ACT][ACT][ACT][ACT][ACT][ACT]
+```
+
+- **HMP**: heatmap (dept rows × time buckets 1h/6h/24h)
+- **RSN**: top reasons + counts (Value misalignment, Tool misuse, Schema drift)
+- **TRN**: resonance avg line chart + threshold bands
+- **ACT**: `Open Drift Console (filtered)` + `Freeze Light` (RBAC-gated)
+
+#### 7.1.5 System Health (HLT c09–c12)
+
+```text
+HLT internal grid → |01|02|03|04|
+Row 1               [HDR][HDR][HDR][HDR]
+Row 2–4             [SV1][SV1][SV2][SV2]
+Row 5–6             [SV3][SV3][SV4][SV4]
+Row 7–8             [INT][INT][INT][INT]
+```
+
+- **SV tiles**: tachyon-core / cogitator-x / governance / gem-forge / ui
+- Tile data: status dot (UP/DOWN/DEGRADED), p95 latency, error rate, queue depth
+- CTA: `Open Service Logs`
+- **INT**: integrations (CRM/ERP/Email/Docs) + last sync time
+
+#### 7.1.6 Sticky Action Bar (ACT c03–c12)
+
+```text
+ACT internal grid → |01|02|03|04|05|06|07|08|09|10|11|12|
+Row 1               [INT][INT][FRZ][FRZ][RPL][RPL][EXP][EXP][   ][   ][   ][   ]
+```
+
+- **INT** `Declare Intent`: opens modal → Council
+- **FRZ** `Freeze Light`: modal with `scope (workflow/dept/org)`, `reason`, `duration`, `approval gate`
+- **RPL** `Replay`: jump to Replay page (by decision/incident)
+- **EXP** `Export`: dashboard snapshot / evidence bundle list
+
+### 7.2 Council Deep-Dive
+
+#### 7.2.1 Council Header (CDH c03–c12)
+
+```text
+CDH internal grid → |01|02|03|04|05|06|07|08|09|10|11|12|
+Row 1               [TTL][TTL][TTL][TTL][ID ][ID ][ST ][ST ][OWN][OWN][BTN][BTN]
+Row 2               [MET][MET][MET][MET][MET][MET][MET][MET][   ][   ][   ][   ]
+```
+
+- **TTL** `CEO AI Council`
+- **ID** intent ID + version
+- **ST** status (Draft/Simulating/Negotiating/Approved)
+- **OWN** owner + last edit
+- **BTN** Save / Request Simulation / Send to Directors
+- **MET** quick outcome chips (predicted +risk)
+
+#### 7.2.2 Intent Builder (IBD c03–c08)
+
+```text
+IBD internal grid → |01|02|03|04|05|06|
+Row 1               [GOA][GOA][GOA][GOA][VAL][VAL]
+Row 2               [CON][CON][CON][CON][VAL][VAL]
+Row 3–4             [KPI][KPI][KPI][KPI][HZN][HZN]
+Row 5               [DEP][DEP][DEP][DEP][BUD][BUD]
+Row 6               [NOT][NOT][NOT][NOT][NOT][NOT]
+```
+
+- GOA: goal editor (rich text)
+- CON: constraints tag editor + templates
+- VAL: values tags (customer_first, compliance_strict)
+- KPI: mini-table `metric/baseline/target/tolerance`
+- HZN: horizon + success window
+- DEP: affected depts multi-select + impact notes
+- BUD: budget cap + compute cap
+- NOT: notes + attachments (policy/contract links)
+
+#### 7.2.3 Council Chat + Proposals (CCH c09–c12)
+
+```text
+CCH internal grid → |01|02|03|04|
+Row 1               [HDR][HDR][HDR][HDR]
+Row 2               [PIL][PIL][PIL][PIL]
+Row 3–7             [THR][THR][THR][THR]
+Row 8–9             [PRP][PRP][PRP][PRP]
+Row 10              [INP][INP][INP][INP]
+```
+
+- THR: threaded chat (CEO/CFO/CTO/AI Directors)
+- PRP cards: ROI, risk, resource ask + buttons `Request Evidence / Accept / Reject`
+- INP: message input + attach evidence
+
+#### 7.2.4 Simulation tab (SR1/SR2/DIF/REC)
+
+- **SR1 (c03–c08)**: KPI delta cards + chart grid
+- **SR2 (c09–c12)**: risk breakdown + constraint violations
+- **DIF (c03–c08)**: policy diff viewer (before/after)
+- **REC (c09–c12)**: ranked recommendations + `Apply safeguards`
+
+#### 7.2.5 Negotiation tab (3 panes)
+
+```text
+NEG internal grid (c03–c12) → |01|02|03|04|05|06|07|08|09|10|11|12|
+Row 1                             [HDR][HDR][HDR][HDR][HDR][HDR][HDR][HDR][HDR][HDR][HDR][HDR]
+Row 2–7                           [REQ][REQ][REQ][REQ][TIM][TIM][TIM][TIM][CTL][CTL][CTL][CTL]
+Row 8                             [ACT][ACT][ACT][ACT][ACT][ACT][ACT][ACT][ACT][ACT][ACT][ACT]
+```
+
+- REQ: resource requests table
+- TIM: negotiation timeline (offers/counteroffers)
+- CTL: CEO controls (caps/force constraints/approve)
+- ACT: convert to execution plan + export
+
+### 7.3 Creator Studio Deep-Dive (Wizard + Validator)
+
+#### 7.3.1 Stepper (STP c03–c12)
+
+```text
+[1 Role]—[2 Scope]—[3 Skills]—[4 Intents]—[5 Contracts]—[6 Deploy]
+```
+
+States: `DONE ✓ | CURRENT ● | LOCKED 🔒` (lock if required fields incomplete)
+
+#### 7.3.2 Form Panel (FRM c03–c08) by step
+
+Step 1 — Role:
+
+```text
+FRM Role → |01|02|03|04|05|06|
+Row 1       [TMP][TMP][TMP][NME][NME][NME]
+Row 2       [OWN][OWN][OWN][TAG][TAG][TAG]
+Row 3       [DSC][DSC][DSC][DSC][DSC][DSC]
+```
+
+- TMP role templates, NME naming + id generator, OWN owner/team, TAG risk classification, DSC description (purpose + boundaries)
+
+Step 2 — Scope & Permissions:
+
+```text
+FRM Scope → |01|02|03|04|05|06|
+Row 1        [DAM][DAM][DAM][PRM][PRM][PRM]
+Row 2–5      [DAM][DAM][DAM][PRM][PRM][PRM]
+Row 6        [EXC][EXC][EXC][EXC][EXC][EXC]
+```
+
+- DAM data access map (tree)
+- PRM permission matrix (read/write/execute/approve)
+- EXC exceptions + justification
+
+Step 3 — Skills (Tools):
+
+```text
+FRM Skills → |01|02|03|04|05|06|
+Row 1         [ALW][ALW][ALW][CFG][CFG][CFG]
+Row 2–5       [ALW][ALW][ALW][CFG][CFG][CFG]
+Row 6         [LMT][LMT][LMT][LMT][LMT][LMT]
+```
+
+- ALW allowlist cards
+- CFG tool config (endpoints/scopes)
+- LMT rate limit + tool budget
+
+Step 4 — Intents:
+
+```text
+FRM Intents → |01|02|03|04|05|06|
+Row 1          [MAP][MAP][MAP][KPI][KPI][KPI]
+Row 2–4        [MAP][MAP][MAP][KPI][KPI][KPI]
+Row 5          [CNS][CNS][CNS][CNS][CNS][CNS]
+```
+
+- MAP link org intents + scope mapping
+- KPI local KPI targets
+- CNS constraints tags (SLA/cost/ethics)
+
+Step 5 — Contracts:
+
+```text
+FRM Contracts → |01|02|03|04|05|06|
+Row 1            [PKS][PKS][PKS][DIF][DIF][DIF]
+Row 2–4          [PKS][PKS][PKS][SCH][SCH][SCH]
+Row 5            [TST][TST][TST][TST][TST][TST]
+```
+
+- PKS contract pack selector (Data/Action/Ethics/Budget)
+- DIF diff viewer for overrides
+- SCH schema preview + sample validator
+- TST run contract tests (dry-run)
+
+Step 6 — Deploy:
+
+```text
+FRM Deploy → |01|02|03|04|05|06|
+Row 1         [ENV][ENV][ROL][ROL][APP][APP]
+Row 2–3       [CHK][CHK][CHK][CHK][CHK][CHK]
+Row 4–5       [CAN][CAN][CAN][PHZ][PHZ][PHZ]
+Row 6         [BTN][BTN][BTN][BTN][BTN][BTN]
+```
+
+- ENV staging/production
+- ROL rollout mode (full/canary/phased)
+- APP approval gate status
+- CHK evidence checklist
+- CAN canary settings
+- PHZ phased rollout per dept
+- BTN deploy actions
+
+#### 7.3.3 Live Validator (VAL c09–c12)
+
+```text
+VAL → |01|02|03|04|
+Row 1  [HDR][HDR][HDR][HDR]
+Row 2  [ERR][ERR][ERR][ERR]
+Row 3  [WRN][WRN][WRN][WRN]
+Row 4  [LPV][LPV][TRM][TRM]
+Row 5  [CTR][CTR][CTR][CTR]
+Row 6  [RDY][RDY][RDY][RDY]
+```
+
+- ERR: blocking errors
+- WRN: warnings (acknowledge to continue)
+- LPV: least-privilege analyzer
+- TRM: tool risk meter
+- CTR: contract completeness (4/4) + versions
+- RDY: readiness score + `Submit for Compliance` gate
+
+### 7.4 Replay Deep-Dive
+
+#### 7.4.1 Step Viewer (SVW c05–c10)
+
+```text
+SVW → |01|02|03|04|05|06|
+Row 1 [HDR][HDR][HDR][HDR][HDR][HDR]
+Row 2 [TOP][TOP][TOP][TOP][TOP][TOP]
+Row 3–8 [CNT][CNT][CNT][CNT][CNT][CNT]
+Row 9 [BOT][BOT][BOT][BOT][BOT][BOT]
+```
+
+#### 7.4.2 Step 1: Input Context (2-column split)
+
+```text
+Step1 CNT → |01|02|03|04|05|06|
+Row 1–4      [SRC][SRC][SCH][SCH][SCH][SCH]
+Row 5–8      [SRC][SRC][KEY][KEY][KEY][KEY]
+```
+
+- SRC: sources list + quality flags
+- SCH: schema view
+- KEY: key fields snapshot + redaction indicator
+
+#### 7.4.3 Step 2: Options Explored (Tree Viz)
+
+```text
+Step2 CNT → |01|02|03|04|05|06|
+Row 1        [CTL][CTL][CTL][CTL][CTL][CTL]
+Row 2–7      [TRE][TRE][TRE][BRD][BRD][BRD]
+Row 8        [NOD][NOD][NOD][NOD][NOD][NOD]
+```
+
+- CTL: depth slider, show-pruned toggle, top-N options, search node
+- TRE: expandable tree (score preview)
+- BRD: branch detail cards (predicted impact / risks / constraint violations / evidence links)
+- NOD: selected node summary + `Compare with chosen`
+
+Tree node row template:
+
+```text
+◉ Node A (depth 3)  score: 0.82  risk: low   [View]
+  ├─ Node A1 score 0.79 (pruned)
+  └─ Node A2 score 0.81
+```
+
+#### 7.4.4 Step 3: Scoring / PRM
+
+```text
+Step3 CNT → |01|02|03|04|05|06|
+Row 1–5      [TBL][TBL][TBL][WHY][WHY][WHY]
+Row 6–8      [TBL][TBL][TBL][WHY][WHY][WHY]
+```
+
+- TBL columns: `option | PRM score | constraint hits | cost | confidence`
+- WHY: rationale viewer + linked policies/values
+
+#### 7.4.5 Step 5: Contract Checks
+
+```text
+Step5 CNT → |01|02|03|04|05|06|
+Row 1–3      [RES][RES][RES][DIF][DIF][DIF]
+Row 4–8      [RES][RES][RES][DIF][DIF][DIF]
+```
+
+- RES: pass/deny/heal + contract version
+- DIF: schema before/after diff + heal patch details
+
+#### 7.4.6 Evidence Panel (EVD c11–c12)
+
+```text
+EVD → |01|02|
+Row 1 [HDR][HDR]
+Row 2 [LNK][LNK]
+Row 3 [ANN][ANN]
+Row 4 [MET][MET]
+Row 5 [BTN][BTN]
+```
+
+- LNK evidence links
+- ANN annotations
+- MET metadata (versions/redaction)
+- BTN attach/export
+
+### 7.5 Chat Deep-Dive
+
+#### 7.5.1 Chat Drawer (c10–c12)
+
+```text
+Drawer (3 cols) internal → |01|02|03|
+Row 1                [HDR][HDR][HDR]
+Row 2                [PIL][PIL][PIL]
+Row 3                [CHP][CHP][CHP]
+Row 4–9              [THR][THR][THR]
+Row 10               [ATT][ATT][ATT]
+Row 11               [INP][INP][INP]
+```
+
+- PIL context pills: WarRoom/Dept/Agent/Decision/Contract/Gem
+- CHP quick chips: Explain drift / Draft contract patch / Summarize / Generate audit note
+- ATT attach picker + permissions note
+- INP input + Run + Safe Mode
+
+#### 7.5.2 AI Console Full Page — sub-components
+
+##### (a) Macros + Context Library (MAC c01–c03)
+
+```text
+MAC → |01|02|03|
+Row 1 [HDR][HDR][HDR]
+Row 2 [SEC][SEC][SEC]
+Row 3 [PIN][PIN][PIN]
+Row 4 [MAC][MAC][MAC]
+Row 5 [FIL][FIL][FIL]
+```
+
+- Recent, pinned entities, macro buttons (Operator/Compliance), filters
+
+##### (b) Chat Thread (CHT c04–c09)
+
+```text
+CHT → |01|02|03|04|05|06|
+Row 1 [HDR][HDR][HDR][HDR][HDR][HDR]
+Row 2–7 [MSG][MSG][MSG][MSG][MSG][MSG]
+Row 8 [CRD][CRD][CRD][CRD][CRD][CRD]
+Row 9 [INL][INL][INL][INL][INL][INL]
+```
+
+Structured card template (Contract Patch Card):
+
+```text
+┌───────────────────────────────────────────────┐
+│ Contract Patch: governance.contract.billing.v2│
+│ Diff Summary: +2 rules, tighten schema        │
+│ Risk: Medium | Scope: FIN dept | Rollback: yes│
+│ Buttons: [Submit Approval] [Apply Staging]    │
+└───────────────────────────────────────────────┘
+```
+
+##### (c) Artifacts Panel (OUT c10–c12)
+
+```text
+OUT → |01|02|03|
+Row 1 [HDR][HDR][HDR]
+Row 2 [LST][LST][LST]
+Row 3 [DTL][DTL][DTL]
+Row 4 [BTN][BTN][BTN]
+```
+
+One-click actions: submit approval / attach to incident / export bundle
+
+### 7.6 Breakpoints (สั้น ๆ แต่ใช้ได้จริง)
+
+- `<1200px`: KPI cards → 3 ต่อแถว (`4 cols/card`)
+- EVT/HLT (`c09–c12`) → สลับเป็น tab stack ใต้ DSP/DRF
+- Replay Step2 tree → TRE เต็มแถว + BRD เป็น drawer
