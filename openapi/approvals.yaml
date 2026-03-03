@@ -1,0 +1,7 @@
+paths:
+  /v1/approvals:
+    get: { tags: [Approvals], operationId: listApprovals, x-required-roles: ["COMPLIANCE_APPROVER", "AUDITOR", "OPS_ADMIN"], responses: { '200': { description: Approvals page, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/ApprovalListResponse' } } } } } }
+  /v1/approvals/{approval_id}:
+    get: { tags: [Approvals], operationId: getApproval, x-required-roles: ["COMPLIANCE_APPROVER", "AUDITOR", "OPS_ADMIN"], parameters: [ { $ref: './common.yaml#/components/parameters/approval_id' } ], responses: { '200': { description: Approval detail, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/Approval' } } } } } }
+  /v1/approvals/{approval_id}/decisions:
+    post: { tags: [Approvals], operationId: createApprovalDecision, x-required-roles: ["COMPLIANCE_APPROVER"], parameters: [ { $ref: './common.yaml#/components/parameters/approval_id' } ], requestBody: { required: true, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/ApprovalDecisionCreateRequest' } } } }, responses: { '201': { description: Decision recorded, content: { application/json: { schema: { $ref: './common.yaml#/components/schemas/ApprovalDecisionCreateResponse' } } } } } }

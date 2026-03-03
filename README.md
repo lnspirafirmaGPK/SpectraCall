@@ -37,3 +37,11 @@ Advanced organizational management and AI agent orchestration powered by the **A
 
 ---
 *Developed for the Aetherium-Syndicate-Inspectra (ASI) Protocol.*
+
+## OIDC production hardening
+
+This scaffold includes JWKS/discovery caching in FastAPI, key-rotation retry for JWT verification, and RFC7662 introspection fallback for opaque access tokens in both FastAPI and Go.
+
+- Added RFC7807 structured error responses for auth failures in both FastAPI and Go middleware.
+
+- OIDC auth sequence diagram: `docs/oidc-auth-sequence.md`
