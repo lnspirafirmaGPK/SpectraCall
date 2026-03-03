@@ -1,10 +1,14 @@
-
-import { renderHook, act } from '@testing-library/react';
-import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import React from 'react';
+import { act, renderHook } from '@testing-library/react';
+
+import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
+
+jest.mock('lucide-react', () => ({
+  PanelLeft: () => null,
+}));
 
 // The hook needs to be used within a SidebarProvider to work correctly.
-const wrapper = ({ children }: { children: React.ReactNode }) => (
+const wrapper = ({ children }) => (
   <SidebarProvider>{children}</SidebarProvider>
 );
 
@@ -43,7 +47,7 @@ describe('useSidebar', () => {
     expect(result.current.open).toBe(false);
 
     act(() => {
-        result.current.toggleSidebar();
+      result.current.toggleSidebar();
     });
 
     // State after second toggle is open again
