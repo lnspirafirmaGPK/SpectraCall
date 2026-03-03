@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import schemathesis
 from fastapi.testclient import TestClient
 
@@ -5,7 +7,8 @@ from app.main import app
 
 
 def test_healthz_auth_contract_smoke():
-    schema = schemathesis.openapi.from_path("openapi.inspectra.yaml")
+    schema_path = Path(__file__).resolve().parents[2] / "openapi.inspectra.yaml"
+    schema = schemathesis.openapi.from_path(schema_path)
     operation = schema["/v1/alerts"]["get"]
     case = operation.Case(headers={"Authorization": "Bearer opaque-token"})
 
