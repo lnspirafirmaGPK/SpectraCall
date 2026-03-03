@@ -15,7 +15,7 @@ const wrapper = ({ children }) => (
 describe('useSidebar', () => {
   it('should throw an error if not used within a SidebarProvider', () => {
     expect(() => renderHook(() => useSidebar())).toThrow(
-      new Error('useSidebar must be used within a SidebarProvider.')
+      'useSidebar must be used within a SidebarProvider.'
     );
   });
 
