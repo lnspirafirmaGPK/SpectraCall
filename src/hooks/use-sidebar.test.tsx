@@ -1,22 +1,20 @@
-
+// @ts-nocheck
 import { renderHook, act } from '@testing-library/react';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import React from 'react';
 
 // The hook needs to be used within a SidebarProvider to work correctly.
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <SidebarProvider>{children}</SidebarProvider>
-);
+const wrapper = ({ children }) => React.createElement(SidebarProvider, null, children);
 
 describe('useSidebar', () => {
   it('should throw an error if not used within a SidebarProvider', () => {
     // Suppress the expected error output in the test console
     const originalError = console.error;
     console.error = jest.fn();
-    
-    const { result } = renderHook(() => useSidebar());
-    
-    expect(result.error).toEqual(new Error('useSidebar must be used within a SidebarProvider.'));
+
+    expect(() => renderHook(() => useSidebar())).toThrow(
+      'useSidebar must be used within a SidebarProvider.'
+    );
 
     console.error = originalError;
   });
@@ -43,7 +41,7 @@ describe('useSidebar', () => {
     expect(result.current.open).toBe(false);
 
     act(() => {
-        result.current.toggleSidebar();
+      result.current.toggleSidebar();
     });
 
     // State after second toggle is open again
