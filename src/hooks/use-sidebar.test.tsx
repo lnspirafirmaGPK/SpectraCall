@@ -1,7 +1,10 @@
 // @ts-nocheck
 import { renderHook, act } from '@testing-library/react';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
-import React from 'react';
+
+jest.mock('lucide-react', () => ({
+  PanelLeft: () => null,
+}));
 
 // The hook needs to be used within a SidebarProvider to work correctly.
 const wrapper = ({ children }) => React.createElement(SidebarProvider, null, children);
