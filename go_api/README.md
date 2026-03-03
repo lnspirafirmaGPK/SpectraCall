@@ -23,3 +23,7 @@ export OIDC_MAP_SCOPE_TO_ROLES="true"
 ## Caching hardening
 - JWT verification uses go-oidc keyset caching/rotation behavior.
 - Introspection responses are cached in-process with LRU eviction and configurable TTL/size via env.
+
+## Related docs
+
+- System auth sequence (JWT + introspection fallback): `../docs/oidc-auth-sequence.md`
