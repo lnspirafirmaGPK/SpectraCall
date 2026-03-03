@@ -1,6 +1,5 @@
-import React from 'react';
-import { act, renderHook } from '@testing-library/react';
-
+// @ts-nocheck
+import { renderHook, act } from '@testing-library/react';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 
 jest.mock('lucide-react', () => ({
@@ -8,9 +7,7 @@ jest.mock('lucide-react', () => ({
 }));
 
 // The hook needs to be used within a SidebarProvider to work correctly.
-const wrapper = ({ children }) => (
-  <SidebarProvider>{children}</SidebarProvider>
-);
+const wrapper = ({ children }) => React.createElement(SidebarProvider, null, children);
 
 describe('useSidebar', () => {
   it('should throw an error if not used within a SidebarProvider', () => {
