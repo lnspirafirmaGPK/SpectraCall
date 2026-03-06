@@ -9,6 +9,16 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
+## Test
+
+```bash
+cd fastapi_app
+pip install -r requirements-dev.txt
+pytest -q
+```
+
+`pytest.ini` sets `pythonpath = .` so tests can import the `app` package directly.
+
 ## Introspection fallback (opaque access tokens)
 
 Set these env vars if your IdP issues opaque access tokens:
