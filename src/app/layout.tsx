@@ -1,9 +1,9 @@
-
 "use client"
 
-import type {Metadata} from 'next';
+import type { Metadata } from 'next';
 import './globals.css';
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function RootLayout({
   children,
@@ -21,6 +21,7 @@ export default function RootLayout({
       <body className="font-sans antialiased selection:bg-accent/30 selection:text-accent">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

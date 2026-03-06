@@ -15,6 +15,7 @@ import {
   SummaryStat,
   SystemCard,
   TimelineRow,
+  WorkspaceSkeleton,
 } from "@/components/workspace"
 import {
   approveAction,
@@ -29,6 +30,7 @@ import {
 } from "./actions"
 import type { Severity, WorkspaceData } from "@/lib/mock/workspace"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 type RoleFilter = "all" | "CEO" | "CTO" | "Ops" | "Risk"
 
@@ -38,9 +40,9 @@ export default function WorkspacePage() {
   const [error, setError] = useState<string | null>(null)
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all")
   const [severityFilter, setSeverityFilter] = useState<Severity | "all">("all")
-  const [showCompleted, setShowCompleted] = useState(true)
-  const [actionMessage, setActionMessage] = useState<string | null>(null)
+  const [showCompleted, setShowCompleted] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const { toast } = useToast()
 
   useEffect(() => {
     const load = async () => {
@@ -49,15 +51,21 @@ export default function WorkspacePage() {
         setError(null)
         const response = await getWorkspaceData()
         setData(response)
-      } catch {
-        setError("โหลดข้อมูล Mission Control ไม่สำเร็จ")
+      } catch (err) {
+        const msg = "ไม่สามารถโหลดข้อมูล Mission Control ได้ในขณะนี้"
+        setError(msg)
+        toast({
+          title: "Fetch Error",
+          description: msg,
+          variant: "destructive",
+        })
       } finally {
         setLoading(false)
       }
     }
 
     void load()
-  }, [])
+  }, [toast])
 
   const filteredApprovals = useMemo(() => {
     if (!data) return []
@@ -70,49 +78,86 @@ export default function WorkspacePage() {
     })
   }, [data, roleFilter, severityFilter, showCompleted])
 
-  const runAction = (callback: () => Promise<{ ok: boolean; message: string }>) => {
+  const runAction = (callback: () => Promise<{ ok: boolean; message: string }>, actionName: string) => {
     startTransition(() => {
       callback()
-        .then((result) => setActionMessage(result.message))
-        .catch(() => setActionMessage("ไม่สามารถทำรายการได้ในขณะนี้"))
+        .then((result) => {
+          if (result.ok) {
+            toast({
+              title: "Success",
+              description: result.message,
+            })
+          } else {
+            toast({
+              title: "Action Failed",
+              description: result.message,
+              variant: "destructive",
+            })
+          }
+        })
+        .catch(() => {
+          toast({
+            title: "Error",
+            description: `ไม่สามารถทำรายการ ${actionName} ได้ในขณะนี้`,
+            variant: "destructive",
+          })
+        })
     })
   }
 
   if (loading) {
-    return <WorkspaceShell><div className="p-6 text-sm text-slate-500">Loading Mission Control...</div></WorkspaceShell>
+    return (
+      <WorkspaceShell>
+        <WorkspaceSkeleton />
+      </WorkspaceShell>
+    )
   }
 
   if (error) {
-    return <WorkspaceShell><div className="p-6 text-sm text-red-500">{error}</div></WorkspaceShell>
+    return (
+      <WorkspaceShell>
+        <div className="flex h-[60vh] flex-col items-center justify-center gap-4 p-6 text-center">
+          <div className="rounded-full bg-red-500/10 p-4 text-red-500">
+            <span className="material-symbols-outlined text-4xl text-red-500">error</span>
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">{error}</h2>
+          <button
+            onClick={() => window.location.reload()}
+            className="rounded-lg bg-primary px-6 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90"
+          >
+            ลองใหม่อีกครั้ง
+          </button>
+        </div>
+      </WorkspaceShell>
+    )
   }
 
-  if (!data) {
-    return <WorkspaceShell><div className="p-6 text-sm text-slate-500">No data available.</div></WorkspaceShell>
-  }
+  if (!data) return null
 
-  const pendingCount = filteredApprovals.filter((item) => item.status === "pending").length
-  const blockedCount = filteredApprovals.filter((item) => item.status === "blocked").length
+  const pendingCount = data.approvals.filter((item) => item.status === "pending").length
+  const blockedCount = data.approvals.filter((item) => item.status === "blocked").length
   const criticalCount = data.alerts.filter((item) => item.severity === "critical").length
 
   return (
     <WorkspaceShell>
       <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6 p-6 lg:p-8">
+        {/* Main Header / KPI Section */}
         <section className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-border-subtle dark:bg-background-card">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2">
               <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">Executive Workspace</p>
-              <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white lg:text-4xl">SpectraCall Mission Control</h1>
-              <p className="max-w-3xl text-sm text-slate-500 dark:text-slate-400 lg:text-base">ศูนย์ควบคุมการตัดสินใจ, ความเสี่ยง, ต้นทุน, และสถานะโครงสร้างพื้นฐาน</p>
+              <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white lg:text-4xl">Mission Control</h1>
+              <p className="max-w-3xl text-sm text-slate-500 dark:text-slate-400 lg:text-base">Command center for strategic orchestration, risk management, and system health.</p>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <QuickAction icon="rocket_launch" label="Deploy" onClick={() => runAction(() => deployAction())} disabled={isPending} />
-              <QuickAction icon="verified_user" label="Approve" onClick={() => runAction(() => approveAction())} disabled={isPending} />
-              <QuickAction icon="emergency" label="Escalate" onClick={() => runAction(() => escalteAction())} disabled={isPending} />
-              <QuickAction icon="auto_awesome" label="AI Brief" onClick={() => runAction(() => briefAction())} disabled={isPending} />
+              <QuickAction icon="rocket_launch" label="Deploy" onClick={() => runAction(() => deployAction(), "Deploy")} disabled={isPending} />
+              <QuickAction icon="verified_user" label="Approve" onClick={() => runAction(() => approveAction(), "Approve All")} disabled={isPending} />
+              <QuickAction icon="emergency" label="Escalate" onClick={() => runAction(() => escalteAction(), "Escalate")} disabled={isPending} />
+              <QuickAction icon="auto_awesome" label="AI Brief" onClick={() => runAction(() => briefAction(), "AI Brief")} disabled={isPending} />
             </div>
           </div>
-          {actionMessage && <p className="rounded-lg bg-primary/10 px-3 py-2 text-xs text-primary">{actionMessage}</p>}
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3 xl:grid-cols-4">
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3 xl:grid-cols-4 mt-2">
             {data.metrics.map((metric) => (
               <MetricCard key={metric.id} metric={metric} />
             ))}
@@ -120,12 +165,18 @@ export default function WorkspacePage() {
         </section>
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+          {/* Main Queue & Systems */}
           <div className="xl:col-span-8 flex flex-col gap-6">
             <Panel
               title="Approval Queue"
-              subtitle="งานที่รอการยืนยันและตรวจสอบ"
+              subtitle="Pending strategic confirmations and overrides."
               icon="fact_check"
-              rightSlot={<div className="flex gap-2"><Chip label={`${pendingCount} pending`} tone="primary" /><Chip label={`${blockedCount} blocked`} tone="accent" /><Chip label={`${criticalCount} critical`} tone="accent" /></div>}
+              rightSlot={
+                <div className="flex gap-2">
+                  <Chip label={`${pendingCount} pending`} tone="primary" />
+                  <Chip label={`${blockedCount} blocked`} tone="accent" />
+                </div>
+              }
             >
               <div className="mb-5 grid grid-cols-1 gap-3 lg:grid-cols-4">
                 <FilterSelect<RoleFilter> label="Role" value={roleFilter} onChange={setRoleFilter} options={["all", "CEO", "CTO", "Ops", "Risk"]} />
@@ -133,27 +184,33 @@ export default function WorkspacePage() {
                 <button
                   onClick={() => setShowCompleted((prev) => !prev)}
                   className={cn(
-                    "h-[42px] rounded-lg border px-4 text-sm font-medium",
-                    showCompleted ? "border-primary bg-primary/10 text-primary" : "border-slate-200 bg-slate-50 text-slate-700 dark:border-border-subtle dark:bg-background-dark dark:text-slate-300"
+                    "h-[42px] rounded-lg border px-4 text-sm font-medium transition-all",
+                    showCompleted
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-slate-200 bg-slate-50 text-slate-700 dark:border-border-subtle dark:bg-background-dark dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                   )}
                 >
                   {showCompleted ? "Hide completed" : "Show completed"}
                 </button>
-                <div className="flex h-[42px] items-center rounded-lg border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 dark:border-border-subtle dark:bg-background-dark dark:text-slate-300">
+                <div className="flex h-[42px] items-center rounded-lg border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-700 dark:border-border-subtle dark:bg-background-dark dark:text-slate-300">
                   {filteredApprovals.length} items visible
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 min-h-[100px]">
                 {filteredApprovals.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">ไม่พบรายการที่ตรงกับ filter ปัจจุบัน</div>
+                  <EmptyState
+                    icon="task"
+                    title="No approvals found"
+                    description="No pending actions match your current filters. Great work!"
+                  />
                 ) : (
                   filteredApprovals.map((item) => (
                     <ApprovalRow
                       key={item.id}
                       item={item}
-                      onExecute={(id) => runAction(() => executeApproval(id))}
-                      onInspect={(id) => runAction(() => inspectApproval(id))}
+                      onExecute={(id) => runAction(() => executeApproval(id), "Execute")}
+                      onInspect={(id) => runAction(() => inspectApproval(id), "Inspect")}
                       disabled={isPending}
                     />
                   ))
@@ -161,41 +218,79 @@ export default function WorkspacePage() {
               </div>
             </Panel>
 
-            <Panel title="System Topology" subtitle="สถานะ node สำคัญของ orchestration fabric" icon="lan">
+            <Panel title="System Topology" subtitle="Orchestration fabric node health and latency." icon="lan">
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                {data.systems.map((node) => (
-                  <SystemCard key={node.id} node={node} />
-                ))}
+                {data.systems.length === 0 ? (
+                  <div className="lg:col-span-2">
+                    <EmptyState icon="cloud_off" title="No active systems" description="Unable to detect any orchestration nodes in this region." />
+                  </div>
+                ) : (
+                  data.systems.map((node) => (
+                    <SystemCard key={node.id} node={node} />
+                  ))
+                )}
               </div>
             </Panel>
 
-            <Panel title="Live Event Timeline" subtitle="เหตุการณ์ล่าสุดที่กระทบระบบ" icon="timeline">
+            <Panel title="Live Event Timeline" subtitle="Real-time audit log of autonomous decisions." icon="timeline">
               <div className="space-y-4">
-                {data.timeline.map((event) => (
-                  <TimelineRow key={event.id} event={event} />
-                ))}
+                {data.timeline.length === 0 ? (
+                  <EmptyState icon="history" title="Timeline empty" description="No system events recorded in the last 24 hours." />
+                ) : (
+                  data.timeline.map((event) => (
+                    <TimelineRow key={event.id} event={event} />
+                  ))
+                )}
               </div>
             </Panel>
           </div>
 
+          {/* Sidebar Widgets */}
           <div className="xl:col-span-4 flex flex-col gap-6">
-            <Panel title="AI Recommendations" subtitle="ข้อเสนอเชิงปฏิบัติจาก ASI" icon="auto_awesome">
+            <Panel
+              title="AI Recommendations"
+              subtitle="Optimization paths suggested by ASI."
+              icon="auto_awesome"
+            >
               <div className="space-y-3">
-                {data.recommendations.map((item) => (
-                  <RecommendationCard key={item.id} item={item} onApply={(id) => runAction(() => applyRecommendation(id))} disabled={isPending} />
-                ))}
+                {data.recommendations.length === 0 ? (
+                  <EmptyState icon="lightbulb" title="No recommendations" description="AI is currently analyzing system patterns. Check back later." />
+                ) : (
+                  data.recommendations.map((item) => (
+                    <RecommendationCard
+                      key={item.id}
+                      item={item}
+                      onApply={(id) => runAction(() => applyRecommendation(id), "Apply Recommendation")}
+                      disabled={isPending}
+                    />
+                  ))
+                )}
               </div>
             </Panel>
 
-            <Panel title="Active Alerts" subtitle="รายการแจ้งเตือนที่ต้องติดตาม" icon="warning">
+            <Panel
+              title="Active Alerts"
+              subtitle="Critical anomalies requiring attention."
+              icon="warning"
+              rightSlot={criticalCount > 0 && <Chip label={`${criticalCount} critical`} tone="accent" />}
+            >
               <div className="space-y-2">
-                {data.alerts.map((item) => (
-                  <AlertRow key={item.id} item={item} onOpen={(id) => runAction(() => openAlert(id))} disabled={isPending} />
-                ))}
+                {data.alerts.length === 0 ? (
+                  <EmptyState icon="check_circle" title="System clear" description="No active alerts detected at this moment." />
+                ) : (
+                  data.alerts.map((item) => (
+                    <AlertRow
+                      key={item.id}
+                      item={item}
+                      onOpen={(id) => runAction(() => openAlert(id), "Open Alert")}
+                      disabled={isPending}
+                    />
+                  ))
+                )}
               </div>
             </Panel>
 
-            <Panel title="Snapshot" subtitle="สรุปสถานะโดยรวม" icon="query_stats">
+            <Panel title="Executive Snapshot" subtitle="High-level health aggregation." icon="query_stats">
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 xl:grid-cols-1">
                 {data.summaryStats.map((item) => (
                   <SummaryStat key={item.id} item={item} />
@@ -209,13 +304,27 @@ export default function WorkspacePage() {
   )
 }
 
+function EmptyState({ icon, title, description }: { icon: string; title: string; description: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 py-10 px-6 text-center dark:border-slate-700/50">
+      <div className="mb-3 rounded-full bg-slate-100 p-3 text-slate-400 dark:bg-slate-800/50 dark:text-slate-500">
+        <span className="material-symbols-outlined text-3xl">{icon}</span>
+      </div>
+      <h3 className="text-base font-bold text-slate-900 dark:text-white">{title}</h3>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</p>
+    </div>
+  )
+}
+
 function WorkspaceShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden bg-background-light font-sans text-slate-900 antialiased dark:bg-background-dark dark:text-slate-100">
       <Sidebar />
       <div className="flex h-full flex-1 flex-col overflow-hidden">
         <Header />
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-slate-50/50 dark:bg-background-dark/50">
+          {children}
+        </main>
       </div>
     </div>
   )
