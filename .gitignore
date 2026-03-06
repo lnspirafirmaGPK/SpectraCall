@@ -40,6 +40,20 @@ next-env.d.ts
 .genkit/*
 .env*
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.hypothesis/
+
+# Local Dev
+dev_server.log
+verification/
+
 # firebase
 firebase-debug.log
 firestore-debug.log
