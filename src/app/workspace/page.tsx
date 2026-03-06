@@ -31,6 +31,11 @@ import {
 import type { Severity, WorkspaceData } from "@/lib/mock/workspace"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
+import { ExecutionMapPanel } from "@/components/dashboard/ExecutionMapPanel"
+import { EnvelopeInspector } from "@/components/dashboard/EnvelopeInspector"
+import { CassetteMemoryPanel } from "@/components/dashboard/CassetteMemoryPanel"
+import { mockExecutionMap } from "@/lib/mock/execution-map"
+import { mockEnvelopes } from "@/lib/mock/envelopes"
 
 type RoleFilter = "all" | "CEO" | "CTO" | "Ops" | "Risk"
 
@@ -48,79 +53,49 @@ export default function WorkspacePage() {
     const load = async () => {
       try {
         setLoading(true)
-        setError(null)
-        const response = await getWorkspaceData()
-        setData(response)
+        const d = await getWorkspaceData()
+        setData(d)
       } catch (err) {
-        const msg = "ไม่สามารถโหลดข้อมูล Mission Control ได้ในขณะนี้"
-        setError(msg)
-        toast({
-          title: "Fetch Error",
-          description: msg,
-          variant: "destructive",
-        })
+        setError("Failed to load workspace data.")
       } finally {
         setLoading(false)
       }
     }
-
-    void load()
-  }, [toast])
+    load()
+  }, [])
 
   const filteredApprovals = useMemo(() => {
     if (!data) return []
-
     return data.approvals.filter((item) => {
-      const matchRole = roleFilter === "all" ? true : item.role === roleFilter
-      const matchSeverity = severityFilter === "all" ? true : item.severity === severityFilter
-      const matchCompleted = showCompleted ? true : item.status !== "completed"
-      return matchRole && matchSeverity && matchCompleted
+      const matchRole = roleFilter === "all" || item.role === roleFilter
+      const matchSeverity = severityFilter === "all" || item.severity === severityFilter
+      const matchStatus = showCompleted || item.status !== "completed"
+      return matchRole && matchSeverity && matchStatus
     })
   }, [data, roleFilter, severityFilter, showCompleted])
 
-  const runAction = (callback: () => Promise<{ ok: boolean; message: string }>, actionName: string) => {
-    startTransition(() => {
-      callback()
-        .then((result) => {
-          if (result.ok) {
-            toast({
-              title: "Success",
-              description: result.message,
-            })
-          } else {
-            toast({
-              title: "Action Failed",
-              description: result.message,
-              variant: "destructive",
-            })
-          }
-        })
-        .catch(() => {
-          toast({
-            title: "Error",
-            description: `ไม่สามารถทำรายการ ${actionName} ได้ในขณะนี้`,
-            variant: "destructive",
-          })
-        })
+  const runAction = async (fn: () => Promise<{ ok: boolean; message: string }>, label: string) => {
+    startTransition(async () => {
+      const result = await fn()
+      toast({
+        title: label,
+        description: result.message,
+        variant: result.ok ? "default" : "destructive",
+      })
+      if (result.ok) {
+        const d = await getWorkspaceData()
+        setData(d)
+      }
     })
   }
 
-  if (loading) {
-    return (
-      <WorkspaceShell>
-        <WorkspaceSkeleton />
-      </WorkspaceShell>
-    )
-  }
+  if (loading) return <WorkspaceSkeleton />
 
   if (error) {
     return (
       <WorkspaceShell>
-        <div className="flex h-[60vh] flex-col items-center justify-center gap-4 p-6 text-center">
-          <div className="rounded-full bg-red-500/10 p-4 text-red-500">
-            <span className="material-symbols-outlined text-4xl text-red-500">error</span>
-          </div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">{error}</h2>
+        <div className="flex flex-1 flex-col items-center justify-center gap-4">
+          <h2 className="text-xl font-black text-slate-900 dark:text-white">{error}</h2>
           <button
             onClick={() => window.location.reload()}
             className="rounded-lg bg-primary px-6 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90"
@@ -167,6 +142,16 @@ export default function WorkspacePage() {
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
           {/* Main Queue & Systems */}
           <div className="xl:col-span-8 flex flex-col gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ExecutionMapPanel map={mockExecutionMap} />
+              <div className="space-y-6">
+                <EnvelopeInspector envelope={mockEnvelopes[0]} />
+                <CassetteMemoryPanel records={[
+                  { id: 'cassette-99', flow_id: 'flow-101', agent_id: 'agent-001', snapshot: {}, timestamp: new Date().toISOString(), tags: ['risk', 'high-volatility'] }
+                ]} />
+              </div>
+            </div>
+
             <Panel
               title="Approval Queue"
               subtitle="Pending strategic confirmations and overrides."
