@@ -1,125 +1,265 @@
-# Governed Fine-tuning (SFT) ในบริบท ASI
+# Enterprise Blueprint: Governed Fine-tuning + Governed RAG + Workplace Gateway (ASI)
 
-เอกสารนี้อธิบายแนวทางการทำ **Governed Fine-tuning** สำหรับ ASI โดยแยกบทบาทของ **SFT** และ **RAG** ให้ชัดเจน และผูกเข้ากับสถาปัตยกรรม Governance Plane + Trust Plane
+เอกสารนี้เป็นแบบออกแบบเชิงองค์กร (enterprise blueprint) สำหรับทำให้โมเดล AI “พร้อมใช้งานในองค์กร” อย่างมีหลักประกัน โดยรวม 3 วงจรหลักภายใต้กรอบ ASI เดียวกัน:
 
-## 1) SFT vs RAG: เลือกใช้ให้ตรงเป้าหมาย
+1. **Governed Fine-tuning Pipeline (SFT/RLHF-ready)**
+2. **Governed RAG Pipeline (Lineage + Policy-gated retrieval)**
+3. **Workplace Integration Gateway (Microsoft 365 + Gmail/Google Workspace)**
 
-### Supervised Fine-tuning (SFT)
-ใช้เมื่อองค์กรต้องการปรับ **พฤติกรรมของโมเดล** เช่น
-- รูปแบบคำตอบ (format)
-- โทนภาษา (tone)
-- วิธีสรุป/โครงสร้าง reasoning
-- ประสิทธิภาพในงานเฉพาะทาง
-
-SFT คือการฝึกจากตัวอย่าง input-output ที่ผ่านการคัดคุณภาพแล้ว เพื่อให้พฤติกรรมสม่ำเสมอและคาดการณ์ได้มากขึ้น
-
-### Retrieval-Augmented Generation (RAG)
-ใช้เมื่อองค์กรต้องการให้คำตอบอ้างอิง **ความรู้ที่เปลี่ยนบ่อย** หรือ **เอกสารภายใน** โดยต้องตรวจสอบแหล่งที่มาได้
-- คู่มือ/เอกสารปฏิบัติงาน
-- ฐานความรู้ภายใน
-- ผลค้นหาแบบอัปเดต
-
-RAG ดึงข้อมูลภายนอกเข้าพรอมป์ขณะรันจริง จึงเหมาะกับบริบทที่ต้องการ freshness + citation
-
-### แนวทางที่แนะนำในองค์กร
-ในระบบจริงควรใช้ทั้งสองร่วมกัน:
-- ใช้ SFT เพื่อปรับพฤติกรรมหลักของโมเดล
-- ใช้ RAG เพื่อเติมข้อมูลจริง ณ เวลารัน
-
-## 2) มุมมอง ASI: AI เป็น Operating Substrate
-
-ใน ASI การ fine-tuning ไม่ใช่งานเฉพาะของทีม data science เท่านั้น แต่เป็น workflow ข้ามโดเมนที่ต้องถูกกำกับโดย:
-- **Governance Plane**: นิยามนโยบาย กำกับขอบเขตการฝึก/การใช้งาน
-- **Trust Plane**: ยืนยันตัวตน ลงนาม artifact และพิสูจน์ lineage
-- **GenesisCore**: ledger สำหรับบันทึก provenance, hash และ trace ที่ตรวจสอบย้อนหลังได้
-
-หลักการสำคัญคือ **identity precedes autonomy**: แม้แต่โมเดลที่ผ่านการฝึกแล้วก็ต้องมี identity, trust scope, และเส้นทางการอนุมัติที่ชัดเจน
-
-## 3) ข้อกำหนด Governed Fine-tuning ใน ASI
-
-### 3.1 Training dataset ทุกชุดต้องมี lineage
-ข้อมูลฝึกทุกชิ้นต้องตอบได้ว่า:
-- สร้างโดยใคร
-- ผ่าน review/approval ใดแล้วบ้าง
-- อยู่ในเวอร์ชันใด
-- มีการลงนามหรือยัง
-
-ตัวอย่างกรณีใช้ JSONL สำหรับ function calling:
-- แต่ละ record ควรมี provenance metadata (domain expert, timestamp, dataset version)
-- dataset manifest ต้องชี้ไปยังแหล่งข้อมูลต้นทางและผลการตรวจ compliance
-
-### 3.2 Policy-as-code ต้องครอบคลุมงานฝึก
-Governance Engine ควร enforce นโยบายอย่างน้อยต่อไปนี้:
-- ห้ามใช้ข้อมูลส่วนบุคคล/ข้อมูลต้องห้ามในการฝึก
-- ต้องมี human review ก่อน promote โมเดลสู่ production
-- จำกัดขอบเขตความสามารถที่อนุญาตให้ปรับแต่ง (เช่น ห้ามลดทอน behavior ด้าน safety)
-- บังคับ authority scope เมื่อโมเดลจะเรียกเครื่องมือ/agent ภายนอก
-
-### 3.3 Fine-tuned model คือ signed artifact
-เมื่อฝึกและทดสอบผ่านแล้ว:
-- ต้อง sign model artifact ด้วยคีย์องค์กรหรือคีย์ทีมที่ได้รับมอบหมาย
-- บันทึก hash + metadata ลง GenesisCore
-- ผูก model version กับ deployment manifest เพื่อให้ replay/audit ย้อนหลังได้
-
-## 4) Mapping SFT/RAG เข้ากับสถาปัตยกรรม ASI
-
-### SFT อยู่ฝั่ง Reasoning Domain (Cogitator X)
-ใช้สร้างพฤติกรรม reasoning หลักที่สอดคล้องนโยบาย เช่น
-- อธิบายเหตุผลแบบโปร่งใส
-- ปฏิเสธคำขอผิดกฎหมาย/ผิดจริยธรรม
-- สื่อสารผลลัพธ์ในรูปแบบมาตรฐานขององค์กร
-
-### RAG อยู่ฝั่ง Data Platform Domain
-รองรับงาน:
-- embeddings
-- vector search
-- knowledge graph
-- document ingestion
-
-ทุก retrieval ควรถูกบันทึก lineage เพื่อระบุได้ว่าคำตอบอ้างอิงเอกสารเวอร์ชันใด ณ เวลาใด
-
-## 5) Recommended Governed Fine-tuning Pipeline
-
-1. **Data curation & approval**
-   - คัดชุดข้อมูล, ตรวจคุณภาพ, ตรวจ compliance
-   - ทำ human review และ sign dataset version
-2. **Controlled training job**
-   - รันใน environment ที่มี audit logging + policy enforcement
-   - บันทึก hyperparameters, base model, dataset snapshot เป็น decision artifact
-3. **Evaluation & sign-off**
-   - ประเมิน benchmark + safety tests
-   - human sign-off ตามระดับความเสี่ยง
-4. **Registry publish & signing**
-   - publish เข้า model registry พร้อม signature และ hash
-5. **GitOps deployment**
-   - deploy ผ่าน Argo CD/Flux
-   - ตรวจ signature/policy ก่อน rollout
-   - ใช้ canary/progressive delivery เพื่อลดความเสี่ยง
-6. **Runtime monitoring & replayability**
-   - ติดตาม drift, quality, policy violations
-   - ต้อง replay ได้จาก trace + lineage + model hash
-
-## 6) Workplace Integration (ตัวอย่าง weather-agent)
-
-กรณีเชื่อม AI agent เข้ากับโปรแกรมสำนักงาน (เช่น Teams/office suite):
-- ใช้ OIDC ผูก identity ของผู้ใช้กับ tenant
-- แปลงคำขอเป็น event ที่มี trace context
-- ให้ agent เฉพาะทาง (เช่น weather-agent) เรียก API ตาม authority scope
-- ส่งผลลัพธ์กลับพร้อม lineage และ source metadata
-
-Governance Plane ควรกำหนดสิทธิ์แบบ role/scope เช่น อนุญาตเฉพาะบางแผนกให้เรียก agent หรือข้อมูลบางประเภท
-
-## 7) Checklist สำหรับทีมก่อนขึ้น Production
-
-- [ ] Dataset มี lineage/provenance ครบ
-- [ ] Dataset และ model artifact ถูก sign
-- [ ] Training run มี audit trail ตรวจสอบได้
-- [ ] Policy-as-code ครอบคลุมทั้ง training และ runtime
-- [ ] มี evaluation report + human sign-off
-- [ ] Deployment เป็น GitOps พร้อม policy gate
-- [ ] Runtime มี drift monitoring + replay capability
-- [ ] RAG retriever จำกัดสิทธิ์การเข้าถึงข้อมูลตาม scope
+เป้าหมายคือทำให้ระบบ AI ใช้งานได้จริงในระดับธุรกิจ พร้อมเงื่อนไขที่ CISO / Compliance / Audit ตรวจสอบได้ว่า **ใครอนุมัติอะไร, ใช้ข้อมูลจากไหน, โมเดลเวอร์ชันใด, และผลลัพธ์ย้อนตรวจได้**.
 
 ---
 
-สรุป: ใน ASI, **SFT ใช้ปรับพฤติกรรมโมเดล** และ **RAG ใช้เติมความรู้ที่ต้องอัปเดตและอ้างอิงได้** โดยทั้งสองต้องอยู่ใต้ governance และ trust controls เดียวกัน เพื่อให้ระบบ AI ในองค์กรทั้งทรงพลังและตรวจสอบได้
+## 1) Design Principles (หลักยึดสถาปัตยกรรม)
+
+1. **Identity precedes autonomy**  
+   ทุก action ของ AI ต้องผูกกับ identity (user, service, agent, model) และ scope ที่อนุญาตก่อนเสมอ.
+
+2. **Lineage by default**  
+   ทุก artifact (dataset, model, index chunk, response) ต้องมี provenance/lineage hash และ trace context.
+
+3. **Policy-as-code everywhere**  
+   Policy ต้อง enforce ทั้งตอน train, deploy, retrieve, generate และส่งผลกลับผู้ใช้.
+
+4. **SFT for behavior, RAG for knowledge**  
+   ใช้ SFT ปรับพฤติกรรม/format/tool-use; ใช้ RAG เติมความรู้ที่เปลี่ยนตลอด เพื่อลด retrain.
+
+5. **Cryptographic trust + operational observability**  
+   artifact สำคัญต้องลงนามและบันทึก ledger; runtime ต้องมี telemetry ที่เชื่อม trace เดียวกัน end-to-end.
+
+---
+
+## 2) ASI Plane Mapping (สิ่งที่แต่ละ Plane รับผิดชอบ)
+
+| ASI Plane | Governed Fine-tuning | Governed RAG | Workplace Integration |
+|---|---|---|---|
+| **Governance Plane** | อนุมัติ dataset/model promotion, กำหนด training policy | ABAC/RBAC ก่อน retrieval, policy decision point | map policy จาก Purview/Vault/DLP สู่ policy engine กลาง |
+| **Trust Plane (GenesisCore)** | sign dataset/model artifact, ledger hash | lineage ต่อ chunk/document citation | ยืนยัน identity federation + ลง hash interaction สำคัญ |
+| **Data Platform** | จัดเก็บ raw/clean/train datasets + version | ingestion/chunking/index/vector+keyword | รับเอกสารจาก M365/Gmail เพื่อทำ governed ingestion |
+| **Control Plane** | orchestrate training/eval/deploy jobs | control agent execution path | API gateway, rate-limit, secret scope, routing |
+| **Observability Plane** | metrics/cost/safety/eval trace | retrieval latency/precision/citation correctness | user activity, tenant usage, policy violations, end-to-end trace |
+
+---
+
+## 3) End-to-end Target Architecture
+
+```mermaid
+graph TD
+    U[User in Teams/Outlook/Gmail] --> GW[Workplace Integration Gateway]
+    GW --> IDP[Entra ID / Google Workspace OIDC]
+    GW --> PDP[Policy Engine (Governance Plane)]
+    GW --> AB[AetherBus / Event Backbone]
+
+    AB --> AR[Agent Runtime]
+    AR --> RX[Reasoning Model (SFT-tuned)]
+    AR --> DP[Data Platform Retriever]
+
+    DP --> IDX[Vector + Keyword Index]
+    DP --> PDP
+
+    FT[Fine-tuning Orchestrator] --> DS[Dataset Registry + Lineage]
+    FT --> EV[Eval + Red Team + HITL]
+    EV --> MR[Model Registry]
+    MR --> TP[Trust Plane / GenesisCore Ledger]
+
+    RX --> TP
+    DP --> TP
+    GW --> TP
+```
+
+---
+
+## 4) Phase A — Governed Fine-tuning Pipeline (SFT Focus)
+
+> Trigger: **Model Update Request (MUR)** ที่ผ่านการอนุมัติจาก Governance Board แล้ว
+
+### A1. Intake & Decision Artifact
+- สร้าง `MUR` เป็น artifact กลาง: business objective, owner, risk tier, allowed data classes, target KPI.
+- Governance Plane ประเมินว่าควรเป็น SFT, prompt-only, หรือ RAG-only change เพื่อลด over-tuning.
+- บังคับ separation of duties: requester ≠ approver.
+
+### A2. Data Curation & Provenance (Trust + Governance)
+**Input sources:** Zendesk, KB, email templates, SOP docs, ticket summaries.
+
+**Workflow:**
+1. Ingest ผ่าน event bus โดยใส่ `source_system`, `export_job_id`, `data_owner`, `timestamp`.
+2. Data classification + DLP scan: PII/PCI/PHI/secrets.
+3. Redaction/Masking ตาม policy.
+4. Format เป็น training schema (เช่น JSONL instruction/function-calling).
+5. สร้าง `dataset_manifest.yaml` + `lineage_hash` ของทั้งชุด.
+6. ลงนาม dataset (org/team key) และ publish เข้า Dataset Registry.
+
+**Policy gates ที่ต้องมี:**
+- deny ถ้ามีข้อมูลลูกค้าจริงที่ไม่ผ่าน pseudonymization
+- deny ถ้าไม่มี legal basis/consent tag
+- deny ถ้าไม่มี owner + retention policy
+
+### A3. Controlled Training Execution (Control Plane)
+- Orchestrator สั่ง train บน isolated VPC/subnet (no-open-egress by default).
+- ใช้ **LoRA/QLoRA** เป็น default เพื่อลดต้นทุนและลด catastrophic forgetting.
+- Log ครบ: base model digest, adapter config, hyperparameters, code commit SHA, container image digest.
+- Secret management ผ่าน short-lived token only.
+- Mesh/network policy block การเรียกปลายทางที่ไม่อยู่ allowlist.
+
+### A4. Evaluation + Human Sign-off
+- Automated eval:
+  - task quality (accuracy, structure adherence)
+  - policy/safety tests (jailbreak, toxic, leakage)
+  - regression against previous prod model
+- Risk-based HITL:
+  - low risk: auto-promote เมื่อผ่าน threshold
+  - medium/high: manual approval board
+- สร้าง `Model Evaluation Report` เป็น signed artifact พร้อม scorecard.
+
+### A5. Model Signing, Registry, Promotion
+- Artifact ที่ promote ต้องมี:
+  - model hash + adapter hash
+  - training dataset manifest hash
+  - eval report hash
+- ลงนามด้วย org private key และบันทึกลง GenesisCore (append-only).
+- Publish เข้า Model Registry พร้อม metadata: expiry, owner, approved scopes.
+
+### A6. Deployment Guardrails
+- Deploy ด้วย GitOps (signed manifest only).
+- Verify signature + policy ก่อน rollout.
+- Progressive rollout (shadow/canary) + kill switch.
+- Runtime drift monitor + auto-rollback policy.
+
+---
+
+## 5) Phase B — Governed RAG Pipeline (Data Platform + Policy Engine)
+
+### B1. Governed Ingestion from M365/Gmail
+- Connectors อ่านเอกสารจาก SharePoint, OneDrive, Exchange mailbox, Gmail, Drive.
+- เก็บ metadata ต่อเอกสาร: `tenant_id`, `doc_id`, `version_id`, `classification`, `owner`, `acl_snapshot`.
+- Chunk ทุกชิ้นต้องอ้างกลับเอกสารต้นทางได้ (`source_uri`, `version`, `offset/page`).
+- ทำ hybrid indexing: vector + keyword + metadata filters.
+
+### B2. Retrieval-time Policy Enforcement
+เมื่อ agent ขอ retrieval ต้องส่ง:
+- identity token (user-delegated หรือ service principal)
+- requested scope/purpose
+- tenant context
+
+Data Platform เรียก Policy Engine ทุกครั้งก่อนคืนผล:
+- ตรวจ ABAC/RBAC + document classification
+- ตรวจ purpose binding (เช่น “summarize for finance close”) ว่าถูกประเภทงาน
+- deny-by-default หาก policy service ตอบไม่ได้
+
+ทุก deny/allow บันทึก decision log พร้อม reason code.
+
+### B3. Grounded Generation with Verifiability
+- Prompt template บังคับให้ตอบพร้อม citation IDs.
+- Model ตอบโดยแนบ source attribution ที่คลิกกลับเอกสารต้นทางได้.
+- ถ้า confidence ต่ำ/แหล่งอ้างอิงไม่พอ ให้ตอบแบบ safe fallback (“ต้องการข้อมูลเพิ่ม”).
+
+### B4. RAG Quality/Safety SLO
+- Retrieval precision@k, citation validity rate, stale-doc rate
+- Policy decision latency P95
+- Hallucination with citation mismatch rate
+- Incident workflow เมื่อพบเอกสาร sensitivity leak
+
+---
+
+## 6) Phase C — Workplace Integration Gateway (M365 + Gmail)
+
+### C1. Identity Federation (OIDC/OAuth2)
+- Gateway เป็น confidential client กับ:
+  - Microsoft Entra ID (M365)
+  - Google Identity (Workspace/Gmail)
+- รองรับ delegated flow (on-behalf-of) เพื่อให้ AI ทำงานในสิทธิผู้ใช้ได้แบบจำกัด scope.
+- token exchange เพื่อออก ASI internal identity token (short TTL + audience binding).
+
+### C2. Traceable Event Transformation
+- ทุกคำขอจาก Outlook/Teams/Gmail ถูกแปลงเป็น CloudEvents + ASI extensions:
+  - `trace_id`, `span_id`, `tenant_id`, `user_id`, `client_app`, `policy_scope`
+- ส่งเข้าบัสกลางโดยคง `traceparent` ตลอดเส้นทาง (gateway → agent → retriever → model → response).
+- ทำให้ replay และ forensic audit ได้ end-to-end.
+
+### C3. Cross-ecosystem Policy Enforcement
+- ดึง/แปล policy metadata จาก Microsoft Purview และ Google Vault/DLP เข้ารูปแบบ policy engine กลาง.
+- ตัวอย่าง:
+  - หากเอกสารติด `Highly Confidential` และผู้ใช้ไม่มี entitlement
+  - Gateway ต้อง block ก่อนถึง model และตอบกลับด้วย policy-safe error message
+- เหตุการณ์ policy violation ต้องแจ้ง SOC/SIEM พร้อมหลักฐาน trace.
+
+### C4. Outbound Controls
+- ป้องกัน data exfiltration:
+  - response content inspection
+  - watermark/classification propagation
+  - block ส่งออกนอก tenant หรือข้าม jurisdiction ตาม sovereignty rule
+
+---
+
+## 7) Canonical Artifacts ที่ต้องมีเพื่อ Audit/Compliance
+
+1. **Model Update Request (MUR)**
+2. **Dataset Manifest + Signature**
+3. **Training Run Record (config, image, code SHA)**
+4. **Evaluation Report + Approval Record**
+5. **Model Card + Deployment Manifest + Signature**
+6. **RAG Retrieval Decision Log**
+7. **User Interaction Trace Bundle (request→response lineage)**
+
+ทุก artifact ต้อง query ได้จาก audit console โดยใช้ trace ID เดียว.
+
+---
+
+## 8) Reference Policy Pack (ตัวอย่าง policy ที่ควรมี)
+
+### Training Policies
+- ห้าม train ด้วยข้อมูลที่มี PII ระบุบุคคลโดยตรง (ถ้าไม่มี lawful basis)
+- ห้ามใช้ข้อมูลที่ติด legal hold
+- บังคับ minimum eval benchmark ก่อน promotion
+
+### Retrieval Policies
+- เอกสารระดับ `Confidential+` ต้องมี user clearance และ purpose ตรง
+- ห้าม cross-tenant retrieval
+- ห้ามดึงเอกสารที่หมดอายุ retention
+
+### Generation Policies
+- บังคับ citation สำหรับคำตอบเชิง factual
+- บังคับ refusal template เมื่อ policy deny
+- บังคับ redact ข้อมูลอ่อนไหวใน outbound responses
+
+---
+
+## 9) Security & Compliance Controls (CISO Checklist)
+
+- Zero Trust network segmentation สำหรับ train/retrieve/runtime
+- Customer-managed keys (CMK) สำหรับข้อมูลและ model artifacts
+- Immutable ledger สำหรับ signature + provenance
+- Continuous red-team + prompt injection defense for RAG
+- Access review ตามรอบ (quarterly entitlement recertification)
+- Incident response playbook แยกตาม training leak / retrieval leak / generation misuse
+
+---
+
+## 10) Rollout Plan (90 วัน)
+
+### Wave 1 (Day 0–30): Foundation
+- ตั้ง policy engine กลาง + trust ledger
+- onboard M365/Gmail connectors แบบ read-only
+- สร้าง dataset registry + model registry with signing
+
+### Wave 2 (Day 31–60): Governed Pilot
+- pilot 1 domain (เช่น finance operations)
+- เปิด SFT แบบ LoRA + governed eval gates
+- เปิด RAG พร้อม policy-gated retrieval + citations
+
+### Wave 3 (Day 61–90): Enterprise Scale
+- ขยาย multi-domain agents
+- เชื่อม SIEM/SOC + executive audit dashboard
+- ทำ control testing ร่วมกับ Internal Audit/Compliance
+
+---
+
+## 11) Executive Summary for CTO/CISO
+
+สถาปัตยกรรมนี้ทำให้องค์กรได้ AI ที่:
+- **ควบคุมได้** (policy-gated ทั้ง train และ runtime)
+- **ตรวจสอบได้** (lineage + signed artifacts + end-to-end trace)
+- **ปลอดภัยต่อองค์กร** (identity federation, least privilege, outbound controls)
+- **ยืดหยุ่นเชิงธุรกิจ** (SFT ปรับพฤติกรรม, RAG เติมความรู้โดยไม่ retrain บ่อย)
+
+ผลลัพธ์คือการก้าวสู่ AI-native Enterprise แบบไม่ทิ้ง governance, trust และ compliance.
