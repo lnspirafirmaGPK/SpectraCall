@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { name: "Dashboard", href: "/overview", icon: "dashboard" },
+  { name: "Mission Control", href: "/workspace", icon: "space_dashboard" },
   { name: "Tachyon Core", href: "/council", icon: "memory" },
   { name: "Resonance", href: "/diagnostics", icon: "ssid_chart" },
   { name: "Creator Studio", href: "/creator", icon: "brush" },
