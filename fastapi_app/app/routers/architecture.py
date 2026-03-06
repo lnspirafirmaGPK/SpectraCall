@@ -1,9 +1,21 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel, ConfigDict
 
 from app.deps.auth import Principal, require_roles
 from app.internal_system import BASELINE_CAPACITY, TARGET_LATENCY_MS, estimate_capacity, evaluate_latency_budget
 
 router = APIRouter(prefix="", tags=["Architecture"])
+
+
+class LatencyInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    api_gateway: Optional[float] = None
+    agent_runtime: Optional[float] = None
+    event_bus: Optional[float] = None
+    lineage_hash: Optional[float] = None
 
 
 @router.get("/v1/internal/architecture", operation_id="getInternalArchitecture")
@@ -39,9 +51,9 @@ async def get_capacity_estimate(
 
 @router.post("/v1/internal/latency-evaluation", operation_id="evaluateInternalLatency")
 async def post_latency_evaluation(
-    latency_ms: dict,
+    latency_ms: LatencyInput,
     p: Principal = Depends(require_roles(["OPS_ADMIN", "COMPLIANCE_APPROVER", "AUDITOR"])),
 ):
-    report = evaluate_latency_budget(latency_ms)
+    report = evaluate_latency_budget(latency_ms.model_dump(exclude_none=True))
     report["targets_ms"] = TARGET_LATENCY_MS
     return report
