@@ -45,3 +45,27 @@ This scaffold includes JWKS/discovery caching in FastAPI, key-rotation retry for
 - Added RFC7807 structured error responses for auth failures in both FastAPI and Go middleware.
 
 - OIDC auth sequence diagram: `docs/oidc-auth-sequence.md`
+
+
+## Internal Architecture Planning APIs (100M events/sec)
+
+To support ASI high-throughput planning and governance workflows, FastAPI now includes internal endpoints that expose architecture metadata, capacity estimation, and latency budget evaluation:
+
+- `GET /v1/internal/architecture`
+- `GET /v1/internal/capacity?target_events_per_sec=<int>`
+- `POST /v1/internal/latency-evaluation`
+
+Reference blueprint: `docs/asi-internal-system-100m-events.md`
+
+Example latency payload:
+
+```json
+{
+  "api_gateway": 1.8,
+  "agent_runtime": 4.6,
+  "event_bus": 0.7,
+  "lineage_hash": 0.4
+}
+```
+
+These APIs are intended for internal operational planning and are protected via role checks in the governance API layer.
