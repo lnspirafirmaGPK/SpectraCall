@@ -509,6 +509,8 @@ function Chip({ label, tone }: { label: string; tone: "primary" | "secondary" | 
   return <span className={cn("rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider", cls)}>{label}</span>;
 }
 
+import { useId, useMemo, useState } from "react";
+
 function FilterSelect<T extends string>({
   label,
   value,
@@ -520,13 +522,19 @@ function FilterSelect<T extends string>({
   onChange: (value: T) => void;
   options: readonly T[];
 }) {
+  const id = useId();
+
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+      <label
+        htmlFor={id}
+        className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+      >
         {label}
-      </span>
+      </label>
       <div className="relative">
         <select
+          id={id}
           value={value}
           onChange={(e) => onChange(e.target.value as T)}
           className="h-[42px] w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 outline-none transition-colors focus:border-primary dark:border-border-subtle dark:bg-background-dark dark:text-slate-200"
@@ -543,6 +551,7 @@ function FilterSelect<T extends string>({
       </div>
     </div>
   );
+}
 }
 
 function ApprovalRow({ item }: { item: ApprovalItem }) {
