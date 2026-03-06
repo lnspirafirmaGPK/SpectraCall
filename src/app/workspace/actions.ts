@@ -70,7 +70,7 @@ export async function briefAction() {
   return performAction("AI Strategic Brief has been generated and queued for review.")
 }
 
-export async function escalteAction() {
+export async function escalateAction() {
   return performAction("Mission critical escalation protocol activated.")
 }
 

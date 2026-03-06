@@ -22,7 +22,7 @@ import {
   applyRecommendation,
   briefAction,
   deployAction,
-  escalteAction,
+  escalateAction,
   executeApproval,
   getWorkspaceData,
   inspectApproval,
@@ -127,7 +127,7 @@ export default function WorkspacePage() {
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <QuickAction icon="rocket_launch" label="Deploy" onClick={() => runAction(() => deployAction(), "Deploy")} disabled={isPending} />
               <QuickAction icon="verified_user" label="Approve" onClick={() => runAction(() => approveAction(), "Approve All")} disabled={isPending} />
-              <QuickAction icon="emergency" label="Escalate" onClick={() => runAction(() => escalteAction(), "Escalate")} disabled={isPending} />
+              <QuickAction icon="emergency" label="Escalate" onClick={() => runAction(() => escalateAction(), "Escalate")} disabled={isPending} />
               <QuickAction icon="auto_awesome" label="AI Brief" onClick={() => runAction(() => briefAction(), "AI Brief")} disabled={isPending} />
             </div>
           </div>
