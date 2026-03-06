@@ -12,6 +12,10 @@ import {
   type RadarStatData,
   type StatusColor,
 } from "@/lib/mock/overview";
+import { AgentRegistryPanel } from "@/components/dashboard/AgentRegistryPanel";
+import { TachyonPipelinePanel } from "@/components/dashboard/TachyonPipelinePanel";
+import { mockAgents } from "@/lib/mock/agents";
+import { mockTachyonRoutes } from "@/lib/mock/tachyon-routes";
 
 export default function OverviewPage() {
   return (
@@ -48,27 +52,11 @@ export default function OverviewPage() {
               </div>
             </div>
 
-            <div className="bg-background-card border border-border-subtle rounded-xl flex flex-col overflow-hidden relative">
-              <div className="p-5 border-b border-border-subtle flex justify-between items-center bg-background-card z-10">
-                <h3 className="text-white text-lg font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-accent animate-pulse">sensors</span>
-                  Tachyon Feed
-                </h3>
-                <span className="text-[10px] uppercase font-bold text-text-muted tracking-widest">Streaming</span>
-              </div>
-              <div className="flex-1 overflow-hidden relative p-4">
-                <div className="font-mono text-xs space-y-3 relative z-10">
-                  {overviewMockData.feed.map((line) => (
-                    <FeedLine key={`${line.time}-${line.status}-${line.msg}`} {...line} />
-                  ))}
-                </div>
-                <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-background-card to-transparent z-20 pointer-events-none"></div>
-              </div>
-            </div>
+            <TachyonPipelinePanel routes={mockTachyonRoutes} />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-6">
-            <div className="bg-background-card border border-border-subtle rounded-xl p-5">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div className="lg:col-span-2 bg-background-card border border-border-subtle rounded-xl p-5">
               <h3 className="text-white text-lg font-bold flex items-center gap-2 mb-4">
                 <span className="material-symbols-outlined text-primary">grain</span>
                 Model Drift Radar
@@ -91,16 +79,18 @@ export default function OverviewPage() {
               </div>
             </div>
 
-            <div className="bg-background-card border border-border-subtle rounded-xl p-5">
-              <h3 className="text-white text-lg font-bold flex items-center gap-2 mb-4">
-                <span className="material-symbols-outlined text-primary">hub</span>
-                Infrastructure Health
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {overviewMockData.healthNodes.map((healthNode) => (
-                  <HealthNode key={healthNode.name} {...healthNode} />
-                ))}
-              </div>
+            <AgentRegistryPanel agents={mockAgents} />
+          </div>
+
+          <div className="bg-background-card border border-border-subtle rounded-xl p-5 mb-6">
+            <h3 className="text-white text-lg font-bold flex items-center gap-2 mb-4">
+              <span className="material-symbols-outlined text-primary">hub</span>
+              Infrastructure Health
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+              {overviewMockData.healthNodes.map((healthNode) => (
+                <HealthNode key={healthNode.name} {...healthNode} />
+              ))}
             </div>
           </div>
         </div>

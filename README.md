@@ -42,6 +42,15 @@ The SpectraCall interface functions as a professional-grade Mission Control Dash
 
 ## 🏗️ Platform Architecture
 
+### Detailed Architecture Documentation
+For more in-depth technical specifications, please refer to the following documentation:
+
+- [AetherBus + Tachyon Architecture](docs/architecture/aetherbus-tachyon.md)
+- [Envelope Specification](docs/architecture/envelope-spec.md)
+- [Agent Registry](docs/architecture/agent-registry.md)
+- [Execution Maps](docs/architecture/execution-map.md)
+
+
 SpectraCall is the frontend of the broader Spectra Mission Control Platform, built on a high-throughput, three-tier performance model.
 
 ### Three-Tier Performance Model
