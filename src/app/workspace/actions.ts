@@ -2,47 +2,78 @@
 
 import { workspaceMockData, type WorkspaceData } from "@/lib/mock/workspace"
 
-const withDelay = async <T>(value: T): Promise<T> => {
-  await new Promise((resolve) => setTimeout(resolve, 250))
+/**
+ * Utility to simulate network latency for development/demo purposes.
+ */
+const withDelay = async <T>(value: T, ms = 500): Promise<T> => {
+  await new Promise((resolve) => setTimeout(resolve, ms))
   return value
 }
 
+/**
+ * Fetches the complete workspace data object.
+ * In a real production environment, this would call a database (e.g. Firestore)
+ * or an internal API.
+ */
 export async function getWorkspaceData(): Promise<WorkspaceData> {
-  return withDelay(workspaceMockData)
+  try {
+    // Simulate fetching from a persistent store
+    const data = await withDelay(workspaceMockData, 800)
+
+    // In production, you would validate the data structure here
+    if (!data) {
+      throw new Error("No workspace data found")
+    }
+
+    return data
+  } catch (error) {
+    console.error("[getWorkspaceData] Error fetching workspace data:", error)
+    throw new Error("Failed to load Mission Control data. Please try again.")
+  }
 }
 
-async function messageAction(message: string) {
-  return withDelay({ ok: true, message })
+/**
+ * General-purpose handler for message-based actions.
+ */
+async function performAction(message: string, success = true) {
+  // Simulate processing time
+  await withDelay(null, 400)
+
+  if (!success) {
+    return { ok: false, message: "Action could not be completed at this time." }
+  }
+
+  return { ok: true, message }
 }
 
 export async function executeApproval(id: string) {
-  return messageAction(`Executed approval ${id}`)
+  return performAction(`Executed approval ${id}`)
 }
 
 export async function inspectApproval(id: string) {
-  return messageAction(`Inspection opened for approval ${id}`)
+  return performAction(`Inspection opened for approval ${id}`)
 }
 
 export async function openAlert(id: string) {
-  return messageAction(`Alert ${id} opened`)
+  return performAction(`Alert ${id} details retrieval successful`)
 }
 
 export async function deployAction() {
-  return messageAction("Deploy flow started")
+  return performAction("Deployment orchestration started successfully.")
 }
 
 export async function approveAction() {
-  return messageAction("Bulk approval flow started")
+  return performAction("Bulk approval workflow initiated for all pending items.")
 }
 
 export async function briefAction() {
-  return messageAction("AI brief generated")
+  return performAction("AI Strategic Brief has been generated and queued for review.")
 }
 
 export async function escalteAction() {
-  return messageAction("Escalation workflow opened")
+  return performAction("Mission critical escalation protocol activated.")
 }
 
 export async function applyRecommendation(id: string) {
-  return messageAction(`Recommendation ${id} applied`)
+  return performAction(`Applied ASI recommendation: ${id}`)
 }
