@@ -12,6 +12,7 @@ const navItems = [
   { name: "Tachyon Core", href: "/council", icon: "memory" },
   { name: "Resonance", href: "/diagnostics", icon: "ssid_chart" },
   { name: "Creator Studio", href: "/creator", icon: "brush" },
+  { name: "Accounting Dept", href: "/accounting", icon: "account_balance", isNew: true },
   { name: "Audit Logs", href: "/operations", icon: "description" },
   { name: "Settings", href: "/settings", icon: "settings" },
 ];
