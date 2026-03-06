@@ -1,9 +1,12 @@
 from pathlib import Path
 
-import schemathesis
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
+
+
+schemathesis = pytest.importorskip("schemathesis")
 
 
 def test_healthz_auth_contract_smoke():
