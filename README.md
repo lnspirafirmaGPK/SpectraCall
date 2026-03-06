@@ -49,6 +49,7 @@ For more in-depth technical specifications, please refer to the following docume
 - [Envelope Specification](docs/architecture/envelope-spec.md)
 - [Agent Registry](docs/architecture/agent-registry.md)
 - [Execution Maps](docs/architecture/execution-map.md)
+- [Governed Fine-tuning in ASI](docs/governed-fine-tuning-asi.md)
 
 
 SpectraCall is the frontend of the broader Spectra Mission Control Platform, built on a high-throughput, three-tier performance model.
