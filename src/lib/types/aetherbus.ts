@@ -1,3 +1,8 @@
+/**
+ * @deprecated Use AsiEnvelope from src/lib/types/envelope.ts for new implementations.
+ * This file is kept for compatibility with existing components during the transition.
+ */
+
 export type EnvelopePriority = 'low' | 'medium' | 'high';
 export type TraceLevel = 'none' | 'basic' | 'verbose';
 export type EncodingType = 'json' | 'protobuf';
