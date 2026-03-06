@@ -44,6 +44,19 @@ def test_latency_evaluation_rejects_non_numeric_values(monkeypatch):
     assert response.status_code == 422
 
 
+
+def test_latency_evaluation_rejects_numeric_strings(monkeypatch):
+    monkeypatch.setattr(verifier, "verify", _allow_ops_admin)
+    client = TestClient(app)
+
+    response = client.post(
+        "/v1/internal/latency-evaluation",
+        headers={"Authorization": "Bearer test-token"},
+        json={"api_gateway": "1.2"},
+    )
+
+    assert response.status_code == 422
+
 def test_latency_evaluation_rejects_unknown_stage(monkeypatch):
     monkeypatch.setattr(verifier, "verify", _allow_ops_admin)
     client = TestClient(app)

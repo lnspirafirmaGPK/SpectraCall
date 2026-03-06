@@ -10,7 +10,7 @@ router = APIRouter(prefix="", tags=["Architecture"])
 
 
 class LatencyInput(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", strict=True)
 
     api_gateway: Optional[float] = None
     agent_runtime: Optional[float] = None
