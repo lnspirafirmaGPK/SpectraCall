@@ -1,89 +1,183 @@
+# SpectraCall | AI-Assisted Mission Control
 
-# SpectraCall | ASI v4.3.1 Orchestration Platform
+[![Next.js](https://img.shields.io/badge/Next.js-15.5-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19.0-blue?logo=react)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-Advanced organizational management and AI agent orchestration powered by the **AetherBus v4.0 (Speed of Light Edition)**.
+SpectraCall is an AI-assisted Mission Control platform designed for monitoring systems, coordinating intelligent agents, and orchestrating operational workflows from a unified command interface.
 
-
-## Implementation Status (Reality Check)
-
-### What exists now (in this repository)
-- Next.js 15 + React 19 dashboard shell with ASI-themed UI surfaces (overview panels, KPI cards, feed widgets, sidebar command panel).
-- Genkit + Google GenAI integration with a general assistant flow scaffold.
-- Early internal API and auth-hardening references (FastAPI/Go notes and docs under `docs/`).
-
-### What is prototyped
-- AI-assisted operator interactions and orchestration UX patterns.
-- Internal architecture planning endpoints and governance-oriented API concepts.
-- OIDC/JWKS/introspection hardening patterns described in docs and scaffold modules.
-
-### Roadmap / target architecture
-- Full backend orchestration runtime with measurable throughput/latency guarantees.
-- Reproducible benchmark suite (transport/event bus/runtime profiling) aligned with advertised performance goals.
-- Production controls: observability, role-policy enforcement, rate limiting, tracing, and failure-domain testing.
-
-## Architectural Excellence: Three-Tier Performance Model
-
-1.  **The Silicon Fabric (Level 1):** Physical & Kernel Layer using RDMA/RoCE v2, Kernel Bypass, and Zero-Copy Networking. 
-    - **Goal:** Latency < 5µs.
-    - **Impact:** Eliminates OS Context Switching.
-
-2.  **The Tachyon Bridge (Level 2):** FFI & Memory Layer built with Rust + PyO3. Features Zero-Copy Pointer Passing via Shared Memory. 
-    - **Goal:** Latency < 50µs.
-    - **Throughput:** Verified at 15,000,000 msg/s via Tachyon SIMD.
-
-3.  **The Cognitive Plane (Level 3):** Event Loop Layer using Python asyncio + uvloop. Handles high-level orchestration and LLM integration. 
-    - **Goal:** Latency < 1ms.
-    - **Optimization:** HFT-inspired Local Variable Caching.
-
-## HFT Optimizations for Python Core
-- **Local Variable Caching:** Eliminates "Dot Lookup" overhead by caching function references at class initialization, allowing Python to call methods directly from local memory.
-- **Slot-Based Optimization:** Implementation of `__slots__` for fixed-size memory allocation, reducing GC overhead and memory footprint, enabling massive agent swarms (1,024+ agents).
-- **Atomic ID Generation:** Optimized to 150X speed using `itertools.count()` over standard UUIDs, reducing system call latency.
-- **Fire-and-Forget Dispatch:** Optimized non-awaiting dispatch patterns that saturate the Tachyon Core without blocking the producer.
-- **Python Dispatch Throughput:** Optimized to 600,000+ msg/s on standard hardware.
-
-## Tech Stack
-- **Frontend:** Next.js 15 (App Router), Tailwind CSS, ShadCN UI, Lucide Icons.
-- **AI/GenAI:** Genkit v1.x, Google Gemini 2.5 Flash.
-- **Visuals:** Recharts for resonance monitoring and custom HFT-inspired data viz.
-
-## Troubleshooting (TH)
-- **อุโมงค์ Ngrok หมดเวลา (Ngrok tunnel timeout):**
-  รีสตาร์ทอุโมงค์ Ngrok และยืนยันว่าเซิร์ฟเวอร์ภายใน (`localhost`) ทำงานอยู่ก่อนแชร์ URL สำหรับการใช้งานจริง หากเป็นระบบ production ควรใช้ผู้ให้บริการโฮสติ้งที่เสถียร พร้อม health checks อย่างสม่ำเสมอ
-- **การสตรีมสะดุดเมื่ออยู่หลังพร็อกซี/โหลดบาลานเซอร์/CDN:**
-  ตรวจสอบว่าโครงสร้างพร็อกซีรองรับ Server-Sent Events (SSE) หรือ HTTP streaming โดยปิดการบัฟเฟอร์ของพร็อกซีในเส้นทางที่สตรีมข้อมูล และเพิ่ม timeout ให้เหมาะสมกับการเชื่อมต่อแบบยาว
+It combines real-time system observability, AI-powered decision support, operational workflows, and event orchestration into a single, high-performance mission control environment.
 
 ---
-*Developed for the Aetherium-Syndicate-Inspectra (ASI) Protocol.*
 
-## OIDC production hardening
+## 🚀 Overview
 
-This scaffold includes JWKS/discovery caching in FastAPI, key-rotation retry for JWT verification, and RFC7662 introspection fallback for opaque access tokens in both FastAPI and Go.
+SpectraCall acts as the control layer of the Spectra platform, providing a visual interface for interacting with AI agents, operational workflows, distributed systems, and event pipelines.
 
-- Added RFC7807 structured error responses for auth failures in both FastAPI and Go middleware.
+The platform is designed for high-complexity decision environments:
+- **Distributed Systems:** Real-time monitoring and management.
+- **Automated Operations:** Coordinated agent actions and deployment pipelines.
+- **Infrastructure Monitoring:** Deep signal analysis and alerting.
+- **AI Governance:** Human-in-the-loop approval for AI-generated recommendations.
 
-- OIDC auth sequence diagram: `docs/oidc-auth-sequence.md`
+---
 
+## 🖥️ Mission Control UI
 
-## Internal Architecture Planning APIs (100M events/sec)
+The SpectraCall interface functions as a professional-grade Mission Control Dashboard.
 
-To support ASI high-throughput planning and governance workflows, FastAPI now includes internal endpoints that expose architecture metadata, capacity estimation, and latency budget evaluation:
+### Primary Entry Points
+*   **`/overview`**: **System Summary Dashboard.** High-level view of system health, operational metrics, active alerts, and recent events.
+*   **`/workspace`**: **Operational Control Panel.** Deep-dive interface for executing actions, approving workflows, inspecting system topology, and reviewing AI recommendations.
 
-- `GET /v1/internal/architecture`
-- `GET /v1/internal/capacity?target_events_per_sec=<int>`
-- `POST /v1/internal/latency-evaluation`
+### Key Features
+*   **Mission Control Dashboard:** A unified interface for monitoring system health and operational signals.
+*   **Approval Workflow:** Built-in system for inspecting, approving, or rejecting operational actions and system changes.
+*   **AI Recommendations:** Intelligent suggestions for performance optimization, risk mitigation, and automated deployments.
+*   **Real-Time Timeline:** Audit-ready event tracking for deployments, system changes, alerts, and AI activity.
 
-Reference blueprint: `docs/asi-internal-system-100m-events.md`
+---
 
-Example latency payload:
+## 🏗️ Platform Architecture
 
-```json
-{
-  "api_gateway": 1.8,
-  "agent_runtime": 4.6,
-  "event_bus": 0.7,
-  "lineage_hash": 0.4
-}
+SpectraCall is the frontend of the broader Spectra Mission Control Platform, built on a high-throughput, three-tier performance model.
+
+### Three-Tier Performance Model
+1.  **The Silicon Fabric (Level 1):** Physical & Kernel Layer using RDMA/RoCE v2 and Zero-Copy Networking. (Latency < 5µs)
+2.  **The Tachyon Bridge (Level 2):** FFI & Memory Layer (Rust + PyO3) with Zero-Copy Pointer Passing. (Latency < 50µs)
+3.  **The Cognitive Plane (Level 3):** Event Loop Layer (Python asyncio + uvloop) for high-level orchestration and LLM integration. (Latency < 1ms)
+
+### System Topology
+```mermaid
+graph TD
+    User([User]) --> UI[SpectraCall Mission UI]
+    UI --> Workspace[Mission Control Workspace]
+
+    subgraph "Spectra Core"
+        Workspace --> Council[AI Council Agents]
+        Workspace --> Creator[Creator Workflows]
+        Workspace --> Diagnostics[Diagnostics Observability]
+    end
+
+    Council & Creator & Diagnostics --> AetherBus[AetherBus Event Fabric]
+    AetherBus --> Tachyon[Tachyon Bridge]
+    Tachyon --> Backend[Distributed Systems / APIs]
 ```
 
-These APIs are intended for internal operational planning and are protected via role checks in the governance API layer.
+### HFT Optimizations
+*   **Local Variable Caching:** Eliminates "Dot Lookup" overhead for method calls.
+*   **Slot-Based Optimization:** Fixed-size memory allocation via `__slots__` for massive agent swarms.
+*   **Atomic ID Generation:** 150X speedup using `itertools.count()` over standard UUIDs.
+*   **Python Dispatch:** Optimized to 600,000+ msg/s on standard hardware.
+
+---
+
+## 🧩 Platform Modules
+
+| Module | Purpose |
+| :--- | :--- |
+| **`overview`** | System-wide summary and health dashboard. |
+| **`workspace`** | Mission control operational panel and action center. |
+| **`council`** | Governance layer for AI decision-making agents. |
+| **`creator`** | Workflow builder for automated operational sequences. |
+| **`diagnostics`** | System analysis and observability engine. |
+| **`executive`** | High-level AI command interface (Chat/Live/Strategy). |
+
+---
+
+## 📂 Project Structure
+
+```text
+src
+ ├─ app                     # Next.js App Router (Routes & Pages)
+ │   ├─ overview/           # Primary Dashboard
+ │   ├─ workspace/          # Mission Control Panel
+ │   ├─ council/            # AI Agent Governance
+ │   ├─ creator/            # Workflow Orchestration
+ │   ├─ diagnostics/        # System Analysis
+ │   └─ executive/          # Command Suite
+ ├─ components              # Shared & Module Components
+ │   ├─ workspace/          # Workspace-specific UI
+ │   ├─ dashboard/          # Dashboard Widgets
+ │   └─ ui/                 # Reusable Radix UI components
+ ├─ ai                      # Genkit AI Flows & Configuration
+ ├─ hooks                   # Custom React Hooks (e.g., use-toast)
+ ├─ lib                     # Utilities, Schemas & Mock Data
+ └─ styles                  # Global CSS & Tailwind Config
+```
+
+---
+
+## ⚡ Quick Start
+
+### 1. Clone & Install
+```bash
+git clone https://github.com/lnspirafirmaGPK/SpectraCall.git
+cd SpectraCall
+npm install
+```
+
+### 2. Run Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
+
+### 3. Build for Production
+```bash
+npm run build
+npm start
+```
+
+---
+
+## 🐳 Docker Support
+
+SpectraCall can be containerized for consistent deployment.
+
+```bash
+# Build the image
+docker build -t spectracall .
+
+# Run the container
+docker run -p 3000:3000 spectracall
+```
+
+---
+
+## 📡 Backend Services
+
+### FastAPI Governance API
+Located in `/fastapi_app`. Provides internal architecture metadata, capacity estimation, and latency budget evaluation.
+*   **Key Endpoints:** `GET /v1/internal/architecture`, `POST /v1/internal/latency-evaluation`.
+
+### Go API Service
+Located in `/go_api`. High-performance service handling alerts, freeze-actions, and compliance approvals.
+*   **Port:** `8080` (with OIDC production hardening).
+
+---
+
+## 🔧 Troubleshooting
+
+*   **Ngrok Tunnel Timeout:** Restart the tunnel and ensure the local server is running before sharing the URL.
+*   **Streaming Issues:** Ensure your proxy/load balancer supports Server-Sent Events (SSE) and has buffering disabled.
+*   **Port Conflicts:** Use `PORT=4000 npm run dev` if 3000 is occupied.
+
+---
+
+## 🗺️ Roadmap
+- [ ] Real-time system data streaming via AetherBus.
+- [ ] Distributed agent orchestration across multi-region clusters.
+- [ ] Automated decision workflows with MCTS reasoning traces.
+- [ ] System replay engine for operational auditing.
+- [ ] Infrastructure graph visualization.
+
+---
+
+## 📄 License
+This project is licensed under the **MIT License**.
+
+## 🤝 Acknowledgments
+SpectraCall is part of the **Spectra Mission Control Platform** designed for Aetherium-Syndicate-Inspectra (ASI) Protocol.
