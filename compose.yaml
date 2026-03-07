@@ -1,8 +1,33 @@
 services:
-  studio:
-    image: studio
+  frontend:
     build:
-      context: .
-      dockerfile: ./Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
-      - 3000:3000
+      - "9002:9002"
+    environment:
+      - PORT=9002
+
+  fastapi-service:
+    build:
+      context: ./services/governance-plane/fastapi-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+
+  go-service:
+    build:
+      context: ./services/governance-plane/go-service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+
+  control-plane:
+    build:
+      context: ./services/control-plane
+      dockerfile: Dockerfile
+
+  trust-plane:
+    build:
+      context: ./services/trust-plane
+      dockerfile: Dockerfile

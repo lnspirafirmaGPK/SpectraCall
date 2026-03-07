@@ -1,0 +1,4 @@
+name: LegalStaff01
+role: Staff
+authority_scope: [review_contract_basic]
+escalation_rules: {complex_clause: expert}
