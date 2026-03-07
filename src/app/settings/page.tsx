@@ -1,88 +1,97 @@
-
 "use client";
 
+import React, { useState } from 'react';
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { GeneralTab } from "@/components/settings/tabs/GeneralTab";
+import { AIAgentsTab } from "@/components/settings/tabs/AIAgentsTab";
+import { GovernanceTab } from "@/components/settings/tabs/GovernanceTab";
+import { ProfileTab } from "@/components/settings/tabs/ProfileTab";
+import { IntegrationsTab } from "@/components/settings/tabs/IntegrationsTab";
+import { NotificationsTab } from "@/components/settings/tabs/NotificationsTab";
+import { BillingTab } from "@/components/settings/tabs/BillingTab";
+import { AdvancedTab } from "@/components/settings/tabs/AdvancedTab";
+import { AIAgentEditor } from "@/components/settings/AIAgentEditor";
+import { mockUserProfile } from "@/lib/mock/settings";
 
 export default function SettingsPage() {
+  const [isEditingAgent, setIsEditingAgent] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const isAdmin = mockUserProfile.role === 'Admin' || mockUserProfile.role === 'Owner';
+  const isCompliance = mockUserProfile.role === 'Compliance' || isAdmin;
+
+  if (isEditingAgent) {
+    return (
+      <div className="flex h-screen overflow-hidden bg-background-dark text-text-main font-sans">
+        <Sidebar />
+        <div className="flex-1 flex flex-col h-full overflow-hidden">
+          <Header />
+          <main className="flex-1 overflow-y-auto p-10">
+            <AIAgentEditor onBack={() => setIsEditingAgent(false)} />
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-background-dark text-text-main font-sans">
       <Sidebar />
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         <Header />
-        <main className="flex-1 overflow-y-auto p-10">
-          <h1 className="text-4xl font-black text-white mb-10 tracking-tight">System Settings</h1>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
-              <section className="bg-background-card border border-border-subtle rounded-3xl p-8 space-y-6">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary">groups</span>
-                    AI Meeting Rooms
-                </h2>
-                <p className="text-text-muted text-sm">Manage your collaborative workspaces and agent permissions.</p>
-
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/5 group hover:border-primary/50 transition-all cursor-pointer">
-                        <div className="flex items-center gap-4">
-                            <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                <span className="material-symbols-outlined">meeting_room</span>
-                            </div>
-                            <div>
-                                <p className="font-bold">Manage Saved Rooms</p>
-                                <p className="text-[10px] text-text-muted uppercase tracking-widest">12 Active Workspaces</p>
-                            </div>
-                        </div>
-                        <span className="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors">chevron_right</span>
-                    </div>
-
-                    <div className="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/5 group hover:border-primary/50 transition-all cursor-pointer">
-                        <div className="flex items-center gap-4">
-                            <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                <span className="material-symbols-outlined">star</span>
-                            </div>
-                            <div>
-                                <p className="font-bold">Favorite AI Agents</p>
-                                <p className="text-[10px] text-text-muted uppercase tracking-widest">Configure Auto-Invite</p>
-                            </div>
-                        </div>
-                        <span className="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors">chevron_right</span>
-                    </div>
-                </div>
-
-                <button className="w-full py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20 hover:bg-blue-600 transition-all">
-                    Navigate to Meeting Manager
-                </button>
-              </section>
-
-              <section className="bg-background-card border border-border-subtle rounded-3xl p-8 space-y-6">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary">security</span>
-                    Governance & Access
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-2">
-                        <p className="text-xs font-bold uppercase tracking-tighter text-text-muted">Agent Autonomy</p>
-                        <p className="text-lg font-black">Level 3 (Restricted)</p>
-                    </div>
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-2">
-                        <p className="text-xs font-bold uppercase tracking-tighter text-text-muted">Decision Threshold</p>
-                        <p className="text-lg font-black">$50,000 USD</p>
-                    </div>
-                </div>
-              </section>
+        <main className="flex-1 overflow-y-auto p-10 pb-20">
+          <div className="max-w-6xl mx-auto space-y-10">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <h1 className="text-4xl font-black text-white tracking-tight">System Settings</h1>
+              <div className="relative w-full md:w-[400px]">
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">search</span>
+                <Input
+                  placeholder="Search settings (Cmd+K)..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 bg-white/5 border-white/10 h-12 rounded-2xl focus:ring-primary/20 transition-all"
+                />
+              </div>
             </div>
 
-            <aside className="space-y-8">
-                <div className="bg-primary/10 border border-primary/20 rounded-3xl p-8 space-y-4">
-                    <span className="material-symbols-outlined text-primary text-4xl">info</span>
-                    <h3 className="text-lg font-bold">Enterprise Mode Active</h3>
-                    <p className="text-xs text-text-muted leading-relaxed">
-                        Your organization is currently operating under the ASI Technical Reference Architecture (TRA) v2.3 protocols. All agent escalations are logged to GenesisCore.
-                    </p>
-                    <button className="text-[10px] font-black uppercase text-primary hover:underline tracking-widest">View TRA Documentation</button>
-                </div>
-            </aside>
+            <Tabs defaultValue="general" className="w-full">
+              <div className="sticky top-0 bg-background-dark/80 backdrop-blur-md z-10 py-4 -mx-4 px-4 overflow-x-auto no-scrollbar">
+                <TabsList className="bg-transparent h-auto p-0 gap-2 flex-nowrap justify-start">
+                  {[
+                    { id: 'general', label: 'General', icon: 'settings', visible: true },
+                    { id: 'agents', label: 'AI Agents', icon: 'smart_toy', visible: true },
+                    { id: 'governance', label: 'Governance', icon: 'gavel', visible: isCompliance },
+                    { id: 'profile', label: 'Profile', icon: 'person', visible: true },
+                    { id: 'integrations', label: 'Integrations', icon: 'apps', visible: true },
+                    { id: 'notifications', label: 'Notifications', icon: 'notifications', visible: true },
+                    { id: 'billing', label: 'Billing', icon: 'payments', visible: isAdmin },
+                    { id: 'advanced', label: 'Advanced', icon: 'code', visible: isAdmin },
+                  ].filter(t => t.visible).map(tab => (
+                    <TabsTrigger
+                      key={tab.id}
+                      value={tab.id}
+                      className="data-[state=active]:bg-primary data-[state=active]:text-white bg-white/5 text-text-muted border border-white/5 rounded-xl px-6 py-3 text-xs font-black uppercase tracking-widest gap-2 transition-all hover:bg-white/10"
+                    >
+                      <span className="material-symbols-outlined text-sm">{tab.icon}</span>
+                      {tab.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
+
+              <div className="mt-8">
+                <TabsContent value="general"><GeneralTab /></TabsContent>
+                <TabsContent value="agents"><AIAgentsTab isAdmin={isAdmin} onEditAgent={() => setIsEditingAgent(true)} /></TabsContent>
+                <TabsContent value="governance"><GovernanceTab /></TabsContent>
+                <TabsContent value="profile"><ProfileTab /></TabsContent>
+                <TabsContent value="integrations"><IntegrationsTab /></TabsContent>
+                <TabsContent value="notifications"><NotificationsTab /></TabsContent>
+                <TabsContent value="billing"><BillingTab /></TabsContent>
+                <TabsContent value="advanced"><AdvancedTab /></TabsContent>
+              </div>
+            </Tabs>
           </div>
         </main>
       </div>
