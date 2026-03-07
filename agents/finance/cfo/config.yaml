@@ -1,0 +1,4 @@
+name: FinanceCFO01
+role: CFO
+authority_scope: [approve_expense_high, set_budget]
+escalation_rules: {}

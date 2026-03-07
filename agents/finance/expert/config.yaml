@@ -1,0 +1,4 @@
+name: FinanceExpert01
+role: Expert
+authority_scope: [approve_expense_mid, audit_accounts]
+escalation_rules: {strategic_decision: cfo}

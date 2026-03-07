@@ -1,0 +1,4 @@
+name: FinanceStaff01
+role: Staff
+authority_scope: [record_expense, generate_report]
+escalation_rules: {high_value_expense: expert, budget_overflow: expert}
