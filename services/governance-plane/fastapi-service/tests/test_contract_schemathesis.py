@@ -10,7 +10,12 @@ schemathesis = pytest.importorskip("schemathesis")
 
 
 def test_healthz_auth_contract_smoke():
-    schema_path = Path(__file__).resolve().parents[2] / "openapi.inspectra.yaml"
+    schema_path = (
+        Path(__file__).resolve().parents[4]
+        / "contracts"
+        / "openapi"
+        / "openapi.inspectra.yaml"
+    )
     assert schema_path.is_file(), f"openapi.inspectra.yaml not found at {schema_path}"
     schema = schemathesis.openapi.from_path(schema_path)
     operation = schema["/v1/alerts"]["get"]
