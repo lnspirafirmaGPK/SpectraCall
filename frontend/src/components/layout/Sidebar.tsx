@@ -11,6 +11,7 @@ const navItems = [
   { name: "Service Catalog", href: "/workspace/control-plane/services", icon: "globe" },
   { name: "Tachyon Core", href: "/council", icon: "memory" },
   { name: "Resonance", href: "/diagnostics", icon: "ssid_chart" },
+  { name: "Infrastructure", href: "/infrastructure", icon: "hub", isNew: true },
   { name: "Creator Studio", href: "/creator", icon: "brush" },
   { name: "Accounting Dept", href: "/accounting", icon: "account_balance", isNew: true },
   { name: "Audit Logs", href: "/operations", icon: "description" },

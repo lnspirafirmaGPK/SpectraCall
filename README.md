@@ -178,11 +178,9 @@ Located in `/go_api`. High-performance service handling alerts, freeze-actions, 
 ---
 
 ## 🗺️ Roadmap
-- [ ] Real-time system data streaming via AetherBus.
 - [ ] Distributed agent orchestration across multi-region clusters.
 - [ ] Automated decision workflows with MCTS reasoning traces.
 - [ ] System replay engine for operational auditing.
-- [ ] Infrastructure graph visualization.
 
 ---
 
