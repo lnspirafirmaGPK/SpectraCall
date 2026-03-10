@@ -180,7 +180,8 @@ Located in `/go_api`. High-performance service handling alerts, freeze-actions, 
 ## 🗺️ Roadmap
 - [ ] Distributed agent orchestration across multi-region clusters.
 - [ ] Automated decision workflows with MCTS reasoning traces.
-- [ ] System replay engine for operational auditing.
+- [x] System replay engine for operational auditing.
+- [ ] Replay retention policies with configurable evidence TTL and legal-hold support.
 
 ---
 
