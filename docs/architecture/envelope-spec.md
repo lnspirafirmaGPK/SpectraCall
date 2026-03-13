@@ -1,62 +1,44 @@
-# ASI Canonical Envelope Specification
+# ASI Envelope Specification (CloudEvents-Compatible)
 
-The ASI Protocol uses a CloudEvents-compatible envelope for all inter-service communication. This document defines the structure and usage of the ASI Envelope.
-
-## Format: CloudEvents 1.0 JSON
-
-All messages must adhere to the [CloudEvents 1.0 JSON Specification](https://github.com/cloudevents/spec/blob/v1.0.1/json-format.md).
-
-## Envelope Structure
+## Canonical Shape
 
 ```json
 {
   "specversion": "1.0",
-  "type": "string",
-  "source": "string",
-  "id": "string",
-  "time": "string",
-  "subject": "string",
+  "type": "asi.budget.reallocation.proposed",
+  "source": "/planes/data/workers/budget-worker",
+  "id": "evt_01j...",
+  "time": "2026-01-01T00:00:00.000Z",
+  "subject": "budget-request-501",
   "datacontenttype": "application/json",
-  "traceparent": "string",
-  "tracestate": "string",
+  "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+  "tracestate": "vendor=sample",
   "asi": {
-    "agent_id": "string",
-    "policy_scope": "string",
-    "classification": "public | internal | restricted",
-    "lineage_hash": "string",
-    "parent_hash": "string",
-    "payload_hash": "string",
-    "signature": "string",
-    "schema_ref": "string",
+    "agent_id": "agent-budget-01",
+    "policy_scope": "finance.budget.reallocation",
+    "classification": "internal",
+    "lineage_hash": "sha256:...",
+    "parent_hash": "sha256:...",
+    "payload_hash": "sha256:...",
+    "signature": "base64:...",
+    "schema_ref": "urn:schema:asi:budget-reallocation:v1",
     "delivery": "at-least-once"
   },
-  "data": { ... }
+  "data": {}
 }
 ```
 
-## Field Definitions
+## Required Fields
+- `specversion`: always `"1.0"`
+- `datacontenttype`: always `"application/json"`
+- `asi.delivery`: always `"at-least-once"` in this phase
+- `traceparent`: required for distributed trace correlation
+- `asi.lineage_hash` and `asi.payload_hash`: required for chain-of-evidence
 
-| Field | Type | Description |
-| :--- | :--- | :--- |
-| `specversion` | String | Must be "1.0". |
-| `type` | String | The type of the event (e.g., `asi.decision.proposed`). |
-| `source` | String | The originator of the event (e.g., `/agents/budget-agent-01`). |
-| `id` | String | A unique ID for this specific event. |
-| `time` | String | RFC 3339 timestamp of when the event occurred. |
-| `subject` | String | (Optional) The identifier of the object the event is about. |
-| `datacontenttype` | String | Must be "application/json". |
-| `traceparent` | String | W3C Trace Context traceparent (e.g., `00-4bf92...-01`). |
-| `tracestate` | String | (Optional) W3C Trace Context tracestate. |
-| `asi.agent_id` | String | The unique identity of the agent generating the event. |
-| `asi.policy_scope`| String | The governance scope under which this event was generated. |
-| `asi.classification`| Enum | Data classification level (public, internal, restricted). |
-| `asi.lineage_hash`| String | Hash of the input/state that led to this event. |
-| `asi.parent_hash` | String | (Optional) The lineage hash of the parent event. |
-| `asi.payload_hash`| String | SHA-256 hash of the `data` payload. |
-| `asi.signature` | String | (Optional) Digital signature of the entire envelope. |
-| `asi.schema_ref` | String | URI reference to the schema of the `data` payload. |
-| `asi.delivery` | String | Delivery guarantee (e.g., `at-least-once`). |
+## Compatibility Rules
+- Fields align with CloudEvents JSON format.
+- Unknown extension attributes must be preserved by intermediaries.
+- `data` payload schema is referenced by `asi.schema_ref` and validated per consumer policy.
 
-## Implementation Notes
-- The `traceparent` and `tracestate` fields are top-level extensions to allow easy extraction by middleware.
-- The `asi` object contains all ASI-specific metadata required for trust and governance.
+## Error Contract
+All API and validation failures must return RFC 7807 Problem Details, with optional extension fields for envelope ID, policy check IDs, and replay IDs.
