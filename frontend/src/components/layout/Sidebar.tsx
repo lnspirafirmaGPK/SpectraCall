@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { name: "Dashboard", href: "/overview", icon: "dashboard" },
   { name: "Mission Control", href: "/workspace", icon: "space_dashboard" },
+  { name: "Budget Reallocation", href: "/workspace/budget-reallocation", icon: "account_balance_wallet", isNew: true },
   { name: "ASI Control Plane", href: "/workspace/control-plane/budget-reallocation", icon: "security", isNew: true },
   { name: "Service Catalog", href: "/workspace/control-plane/services", icon: "globe" },
   { name: "Tachyon Core", href: "/council", icon: "memory" },
