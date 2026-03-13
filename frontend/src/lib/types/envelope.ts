@@ -1,8 +1,5 @@
 /**
- * Canonical ASI Envelope (CloudEvents 1.0 Compatible)
- *
- * This is the fundamental unit of communication for the ASI Protocol.
- * It extends the CloudEvents specification to include trust, governance, and lineage fields.
+ * Canonical ASI Envelope (CloudEvents 1.0 compatible).
  */
 
 export type AsiClassification = 'public' | 'internal' | 'restricted';
@@ -16,33 +13,23 @@ export interface AsiTrustMetadata {
   payload_hash: string;
   signature?: string;
   schema_ref: string;
-  delivery: "at-least-once" | "exactly-once";
+  delivery: 'at-least-once';
 }
 
 export interface AsiEnvelope<T = unknown> {
-  // CloudEvents 1.0 Standard Fields
-  specversion: "1.0";
-  type: string;        // e.g., "asi.decision.proposed"
-  source: string;      // e.g., "/agents/budget-agent-01"
-  id: string;          // Unique event ID
-  time: string;        // ISO 8601 timestamp
-  subject?: string;    // The object the event is about
-  datacontenttype: "application/json";
-
-  // Trace Propagation (W3C Trace Context)
+  specversion: '1.0';
+  type: string;
+  source: string;
+  id: string;
+  time: string;
+  subject?: string;
+  datacontenttype: 'application/json';
   traceparent: string;
   tracestate?: string;
-
-  // ASI Specific Extensions
   asi: AsiTrustMetadata;
-
-  // The Data Payload
   data: T;
 }
 
-/**
- * Example Payload for Budget Reallocation
- */
 export interface BudgetReallocationDecisionData {
   requestId: string;
   amount: number;
@@ -51,18 +38,5 @@ export interface BudgetReallocationDecisionData {
   toAccount: string;
   reason: string;
   riskScore: number;
-}
-
-/**
- * RFC 7807 - Problem Details for HTTP APIs
- *
- * Used for all API error responses in the ASI Control Plane.
- */
-export interface ProblemDetails {
-  type: string;        // URI reference that identifies the problem type
-  title: string;       // Short, human-readable summary of the problem
-  status: number;      // HTTP status code
-  detail?: string;     // Human-readable explanation specific to this occurrence
-  instance?: string;   // URI reference that identifies the specific occurrence
-  [key: string]: any;  // Extensions
+  evidenceRefs?: string[];
 }

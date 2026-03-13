@@ -190,3 +190,38 @@ This project is licensed under the **MIT License**.
 
 ## 🤝 Acknowledgments
 SpectraCall is part of the **Spectra Mission Control Platform** designed for Aetherium-Syndicate-Inspectra (ASI) Protocol.
+
+---
+
+## Mission Control principles
+- SpectraCall is the **Mission Control UI/Control Surface** for operators and approvals.
+- Mission Control coordinates actions across Control, Data, Trust, Governance, and Observability planes.
+- Privileged execution requires envelope integrity, policy checks, and auditable lineage.
+- UI surfaces evidence and context, but execution authority remains policy + approval driven.
+
+## 5-plane architecture
+- **Control Plane:** operator actions, approvals, interventions, freeze and replay triggers.
+- **Data Plane:** workflow workers, domain execution, and embedding generation.
+- **Trust Plane:** identity, signatures, lineage verification, and replay integrity.
+- **Governance Plane:** policy evaluation, risk scoring, obligations, and exception control.
+- **Observability Plane:** traces, logs, metrics, and forensic audit trails.
+
+## Evidence/context layer
+- Multimodal embeddings are generated in Data Plane workers (not browser clients).
+- Embedding output is consumed as context/evidence for decisions, not as standalone authority.
+- Evidence artifacts are linked to envelope IDs, policy scopes, and lineage hashes.
+
+## Budget Reallocation slice
+Budget Reallocation is the minimum viable end-to-end slice because it includes:
+1. Proposal event generation
+2. Policy evaluation and risk scoring
+3. Human approval workflow
+4. Execution and result publication
+5. Replay and lineage-ready audit artifacts
+
+## Coding standards for contracts, tracing, errors, and policy
+- **Contracts:** Use strict TypeScript interfaces under `frontend/src/lib/types` and evolve additively.
+- **Tracing:** Require `traceparent` in envelope contracts and preserve `tracestate` when present.
+- **Errors:** Return RFC7807 Problem Details with extension fields where helpful.
+- **Policy:** Every mutable action must include explicit `policy_scope` and a recorded `PolicyCheck`.
+- **Lineage/Replay:** Include lineage hashes and replay references for control-impacting events.

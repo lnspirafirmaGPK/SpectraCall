@@ -1,29 +1,37 @@
-# ASI Technical Reference Architecture (TRA) - Source of Truth
+# ASI Technical Reference Architecture (TRA)
 
-This document serves as the repository-local source of truth for the Aetherium-Syndicate-Inspectra (ASI) Protocol Technical Reference Architecture.
+SpectraCall remains the **Mission Control UI and control surface** for ASI operations. It is not a model-serving application. All intelligence execution is delegated to backend workers and services.
 
-## Core Vision
-ASI is an **AI-native Enterprise Operating System**. It is designed to provide authority, policy constraints, and proof/audit artifacts within the runtime from the very beginning.
+## Mission and Positioning Constraints
+- SpectraCall owns operator experience, approvals, control workflows, and visibility.
+- Model execution, embedding generation, and heavy compute run in backend Data Plane services.
+- Every new flow must emit an ASI envelope with trace context, lineage metadata, and policy scope.
+- Budget Reallocation is the minimum viable vertical slice because it exercises policy, approval, lineage, replay, and audit together.
 
-## The 5 Planes of ASI
-To manage complexity and ensure governance, the architecture is divided into five functional planes:
+## 5-Plane ASI Architecture
+1. **Control Plane**: Mission Control actions, approvals, interventions, freeze/unfreeze, and safe shutdown paths.
+2. **Data Plane**: Task execution workers, embedding/indexing workers, business-domain processors, and event transformation.
+3. **Trust Plane**: Identity, signing, verification, lineage chain integrity, replay verification, and non-repudiation.
+4. **Governance Plane**: Policy-as-code checks, risk scoring, approvals gates, obligations, and exception workflow.
+5. **Observability Plane**: Traces, logs, metrics, audit trails, and replay analytics.
 
-1.  **Control Plane**: Manages approvals, authority, safe modes, quarantine, and shutdown paths.
-2.  **Data Plane**: Handles agent execution, event-heavy processing, and operations under degraded conditions.
-3.  **Trust Plane**: Manages identity, signatures, lineage proofs, and system replays.
-4.  **Governance Plane**: Enforces policy-as-code, interventions, and monitors drift/risk.
-5.  **Observability Plane**: Provides traces, metrics, logs, audits, and cost management.
+## Baseline Runtime Contract
+All inter-plane events use a CloudEvents-compatible `AsiEnvelope<T>` with mandatory:
+- W3C trace propagation (`traceparent`, optional `tracestate`)
+- ASI trust metadata (`agent_id`, `policy_scope`, classification, lineage + payload hashes)
+- Delivery mode fixed to `at-least-once`
+- Schema reference for payload validation
 
-## Architectural Principles
-- **Contracts over Conventions**: Strict adherence to OpenAPI 3.1, AsyncAPI, and RFC 7807 for error shapes.
-- **AI-Native Governance**: Policies are enforced at the runtime level, not just as post-hoc checks.
-- **Trace & Lineage**: Every decision and action must propagate trace context (traceparent/tracestate) and maintain a lineage hash chain.
-- **CloudEvents Compatibility**: All inter-service communication uses an ASI-extended CloudEvents envelope.
+## Budget Reallocation MVP Slice
+Budget reallocation is the first mandatory flow due to rich governance:
+1. Data Plane proposes `asi.budget.reallocation.proposed`.
+2. Governance Plane evaluates policy and risk.
+3. Control Plane requests and records human approval.
+4. Data Plane executes approved change.
+5. Trust + Observability planes persist lineage, replay artifact, and audit records.
 
-## Key Primitives
-- **Envelope**: The canonical message wrapper with trust and governance metadata.
-- **DecisionArtifact**: A signed record of an AI or human decision.
-- **ExecutionMap**: A DAG or tree representing the workflow execution path.
-- **AgentRegistryEntry**: Metadata defining agent capabilities and authority.
-- **PolicyCheck**: The result of a policy evaluation against a decision.
-- **LineageRecord**: A link in the proof chain for auditability.
+## Architectural Guardrails
+- No Gemini or embedding calls from browser code.
+- Embedding artifacts are evidence/context only, never sole authority for execution.
+- APIs return RFC 7807 Problem Details for failures.
+- Service catalog participation and lineage participation are explicit per service.

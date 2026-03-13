@@ -1,0 +1,9 @@
+/** RFC 7807 Problem Details */
+export interface ProblemDetails {
+  type: string;
+  title: string;
+  status: number;
+  detail?: string;
+  instance?: string;
+  extensions?: Record<string, unknown>;
+}

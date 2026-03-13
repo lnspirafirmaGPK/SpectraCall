@@ -1,11 +1,16 @@
 /**
- * Core ASI Primitives
- *
- * These types define the primary building blocks of the ASI Enterprise Operating System.
+ * Core ASI primitives for Mission Control views.
  */
+
+import type { LineageRecord as CanonicalLineageRecord } from './lineage';
+import type { PolicyCheck as CanonicalPolicyCheck, HumanApproval as CanonicalHumanApproval } from './governance';
+import type { ServiceCatalogEntry as CanonicalServiceCatalogEntry } from './service-catalog';
 
 export type AsiPlane = 'Control' | 'Data' | 'Trust' | 'Governance' | 'Observability';
 
+/**
+ * UI-friendly service model kept for backward compatibility with existing pages.
+ */
 export interface ServiceCatalogEntry {
   id: string;
   name: string;
@@ -13,25 +18,17 @@ export interface ServiceCatalogEntry {
   owner: string;
   plane: AsiPlane;
   domain: string;
-  interfaceRefs: string[];     // URLs/IDs for OpenAPI/AsyncAPI specs
-  publishedEvents: string[];   // List of event types emitted
-  consumedEvents: string[];    // List of event types processed
-  stateStorage?: string;      // The storage layer used (if any)
-  securityMode: 'OIDC' | 'JWKS' | 'Introspection' | 'None';
+  interfaceRefs: string[];
+  publishedEvents: string[];
+  consumedEvents: string[];
+  stateStorage?: string;
+  securityMode: 'OIDC' | 'JWKS' | 'Introspection' | 'mTLS' | 'None';
   lineageParticipation: boolean;
   criticalityTier: 'P0' | 'P1' | 'P2' | 'P3';
+  sloTier?: 'gold' | 'silver' | 'bronze';
   status: 'healthy' | 'degraded' | 'unavailable';
-  onCall: string;             // On-call rotation or contact
-}
-
-export interface DecisionArtifact {
-  id: string;
-  envelope_id: string;        // The ID of the AsiEnvelope that proposed this decision
-  status: 'proposed' | 'evaluated' | 'approved' | 'rejected' | 'executed' | 'replayed';
-  policy_check?: PolicyCheck;
-  human_approval?: HumanApproval;
-  execution_result?: ExecutionResult;
-  lineage_record: LineageRecord;
+  onCall: string;
+  canonical?: CanonicalServiceCatalogEntry;
 }
 
 export interface PolicyCheck {
@@ -42,6 +39,8 @@ export interface PolicyCheck {
   hitRules: string[];
   evaluatedAt: string;
   evaluatorId: string;
+  obligations?: string[];
+  canonical?: CanonicalPolicyCheck;
 }
 
 export interface HumanApproval {
@@ -51,6 +50,7 @@ export interface HumanApproval {
   decision: 'approve' | 'reject';
   comment?: string;
   signature?: string;
+  canonical?: CanonicalHumanApproval;
 }
 
 export interface LineageRecord {
@@ -61,6 +61,7 @@ export interface LineageRecord {
   timestamp: string;
   proof_availability: boolean;
   payload_hash: string;
+  canonical?: CanonicalLineageRecord;
 }
 
 export interface ExecutionResult {
@@ -69,8 +70,19 @@ export interface ExecutionResult {
   tachyon_route: string;
   trace_id: string;
   timestamp: string;
-  output?: any;
-  error?: any;
+  output?: unknown;
+  error?: unknown;
+  replay_id?: string;
+}
+
+export interface DecisionArtifact {
+  id: string;
+  envelope_id: string;
+  status: 'proposed' | 'evaluated' | 'approved' | 'rejected' | 'executed' | 'replayed';
+  policy_check?: PolicyCheck;
+  human_approval?: HumanApproval;
+  execution_result?: ExecutionResult;
+  lineage_record: LineageRecord;
 }
 
 export interface WorkplaceConnector {
