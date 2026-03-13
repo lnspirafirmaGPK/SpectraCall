@@ -1,50 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { apiState, createProblemResponse } from '@/lib/api-state';
-import { PolicyCheck } from '@/lib/types/asi';
+import { apiState } from '@/lib/api-state';
+import { evaluateDecisionPolicy } from '@/lib/server/policy';
+import { problemResponse } from '@/lib/server/problem';
 
-/**
- * POST /api/policies/evaluate
- * Evaluates a proposed decision against the Governance Plane's policies.
- */
 export async function POST(request: NextRequest) {
   try {
-    const { decision_id } = await request.json();
-
-    if (!decision_id) {
-      return createProblemResponse("Missing decision_id", 400, "A decision_id is required to evaluate policies.");
+    const body = (await request.json()) as { decision_id?: string };
+    if (!body.decision_id) {
+      return problemResponse(400, 'Missing decision_id', 'A decision_id is required to evaluate policies.');
     }
 
-    const decision = apiState.getDecision(decision_id);
+    const decision = apiState.getDecision(body.decision_id);
     if (!decision) {
-      return createProblemResponse("Decision not found", 404, `The decision ${decision_id} does not exist.`);
+      return problemResponse(404, 'Decision not found', `The decision ${body.decision_id} does not exist.`);
     }
 
-    // Mock Evaluation Logic (Budget Reallocation context)
-    const policyCheck: PolicyCheck = {
-      id: `pol-${decision_id}-${Date.now()}`,
-      passed: true,
-      reason: "Within budget limits and authorized by finance policy-as-code.",
-      riskScore: 0.12, // Low risk
-      hitRules: ["auth.finance.limit.check", "auth.finance.owner.verify"],
-      evaluatedAt: new Date().toISOString(),
-      evaluatorId: "svc-policy-01"
+    const policy = evaluateDecisionPolicy({
+      decision_id: body.decision_id,
+      amount: (decision as any).data?.amount,
+      currency: (decision as any).data?.currency,
+      policy_scope: 'finance.global',
+    });
+
+    const uiPolicyCheck = {
+      id: policy.policy_check.id,
+      passed: policy.policy_check.passed,
+      reason: policy.policy_check.reason,
+      riskScore: policy.policy_check.risk_score,
+      hitRules: policy.policy_check.hit_rules,
+      evaluatedAt: policy.policy_check.evaluated_at,
+      evaluatorId: policy.policy_check.evaluator_id,
+      obligations: policy.policy_check.obligations,
+      canonical: policy.policy_check,
     };
 
-    // Update Decision State
-    apiState.updateDecision(decision_id, { status: 'evaluated', policy_check: policyCheck });
+    apiState.updateDecision(body.decision_id, {
+      status: 'evaluated',
+      policy_check: uiPolicyCheck,
+    });
 
     return NextResponse.json({
       success: true,
-      passed: policyCheck.passed,
-      risk_score: policyCheck.riskScore,
-      policy_check: policyCheck,
+      decision_id: body.decision_id,
+      passed: policy.passed,
+      risk_score: policy.policy_check.risk_score,
+      policy_check: uiPolicyCheck,
+      canonical: policy.policy_check,
+      degraded: false,
       links: {
-        approve: `/api/decisions/${decision_id}/approve`,
-        reject: `/api/decisions/${decision_id}/reject`
-      }
+        approve: `/api/decisions/${body.decision_id}/approve`,
+      },
     });
-
-  } catch (error) {
-    return createProblemResponse("Internal Server Error", 500, error instanceof Error ? error.message : "Error during policy evaluation.");
+  } catch {
+    return problemResponse(500, 'Policy evaluation failed', 'Unable to complete policy evaluation.');
   }
 }
