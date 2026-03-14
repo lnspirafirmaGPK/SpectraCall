@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import type { ReplayRecord } from "@/lib/mock/budget-reallocation"
+import type { ReplayRecordView } from "@/lib/workspace/budget-reallocation"
 
-export function ReplayPanel({ records }: { records: ReplayRecord[] }) {
+export function ReplayPanel({ records }: { records: ReplayRecordView[] }) {
   const available = records.at(-1)?.status === "completed"
 
   return (

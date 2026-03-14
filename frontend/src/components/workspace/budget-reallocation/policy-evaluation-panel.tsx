@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import type { PolicyEvaluationResult } from "@/lib/mock/budget-reallocation"
+import type { PolicyEvaluationView } from "@/lib/workspace/budget-reallocation"
 
-export function PolicyEvaluationPanel({ policy }: { policy: PolicyEvaluationResult }) {
+export function PolicyEvaluationPanel({ policy }: { policy: PolicyEvaluationView }) {
   return (
     <Card className="bg-background/40 border-primary/20">
       <CardHeader>
@@ -12,6 +12,7 @@ export function PolicyEvaluationPanel({ policy }: { policy: PolicyEvaluationResu
         <div className="flex gap-2 flex-wrap">
           <Badge variant="outline">Policy scope: {policy.policyScope}</Badge>
           <Badge variant="outline">Status: {policy.status}</Badge>
+          {typeof policy.riskScore === "number" ? <Badge variant="outline">Risk: {policy.riskScore}</Badge> : null}
         </div>
         {policy.checks.map((check) => (
           <div key={check.name} className="rounded-md border border-white/10 p-2 text-sm">

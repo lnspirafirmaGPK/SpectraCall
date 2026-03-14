@@ -219,6 +219,22 @@ Budget Reallocation is the minimum viable end-to-end slice because it includes:
 4. Execution and result publication
 5. Replay and lineage-ready audit artifacts
 
+
+## Budget Reallocation demo runbook
+1. Run SpectraCall frontend (Mission Control):
+   - `cd frontend && npm run dev`
+2. Run embedding worker (separate terminal):
+   - `cd services/embedding-worker && pip install -r requirements.txt && uvicorn app.main:app --host 0.0.0.0 --port 8001`
+3. Optional env for connected mode:
+   - `export EMBEDDING_WORKER_URL=http://localhost:8001`
+   - `export GEMINI_API_KEY=<optional>`
+4. Open `http://localhost:9002/workspace/budget-reallocation`.
+5. In Mission Control, add evidence and click **Run decision pipeline**.
+6. Verify panels execute end-to-end:
+   - Evidence intake -> embedding/context prep -> context retrieval -> policy proposal -> human approve/reject -> replay/lineage.
+7. Degraded mode demo:
+   - Stop worker or unset `EMBEDDING_WORKER_URL`; flow still runs with fallback context and `degraded mode` state.
+
 ## Coding standards for contracts, tracing, errors, and policy
 - **Contracts:** Use strict TypeScript interfaces under `frontend/src/lib/types` and evolve additively.
 - **Tracing:** Require `traceparent` in envelope contracts and preserve `tracestate` when present.

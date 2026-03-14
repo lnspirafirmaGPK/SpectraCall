@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import type { BudgetReallocationProposal } from "@/lib/mock/budget-reallocation"
+import type { BudgetProposalView } from "@/lib/workspace/budget-reallocation"
 
-export function DecisionProposalCard({ proposal }: { proposal: BudgetReallocationProposal }) {
+export function DecisionProposalCard({ proposal }: { proposal: BudgetProposalView }) {
   return (
     <Card className="bg-background/40 border-primary/20">
       <CardHeader>
@@ -18,6 +18,7 @@ export function DecisionProposalCard({ proposal }: { proposal: BudgetReallocatio
         </div>
         <p className="text-sm">{proposal.rationale}</p>
         <p className="text-xs text-muted-foreground">Linked evidence: {proposal.linkedEvidenceIds.join(", ")}</p>
+        <p className="text-xs text-muted-foreground">Cited context hits: {proposal.citedContextHitIds.join(", ")}</p>
       </CardContent>
     </Card>
   )
