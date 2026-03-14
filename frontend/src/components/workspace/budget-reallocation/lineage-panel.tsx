@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import type { LineageArtifact } from "@/lib/mock/budget-reallocation"
+import type { LineageArtifactView } from "@/lib/workspace/budget-reallocation"
 
-export function LineagePanel({ lineage }: { lineage: LineageArtifact }) {
+export function LineagePanel({ lineage }: { lineage: LineageArtifactView }) {
   return (
     <Card className="bg-background/40 border-primary/20">
       <CardHeader>
