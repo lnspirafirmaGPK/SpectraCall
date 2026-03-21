@@ -1,14 +1,11 @@
-"use client"
-
-import type { Metadata } from 'next';
-import './globals.css';
-import { ThemeProvider } from "next-themes";
-import { Toaster } from "@/components/ui/toaster";
+import './globals.css'
+import { ThemeProvider } from "next-themes"
+import { Toaster } from "@/components/ui/toaster"
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -25,5 +22,5 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }
